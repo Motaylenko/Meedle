@@ -1,40 +1,74 @@
+import { useState, useEffect } from 'react'
+import api from '../services/api'
 import './Courses.css'
 
 function Courses() {
-    const courses = [
-        {
-            id: 1,
-            name: 'Веб-технології',
-            teacher: 'Іваненко І.І.',
-            progress: 75,
-            students: 42,
-            color: 'hsl(262, 83%, 58%)'
-        },
-        {
-            id: 2,
-            name: 'Бази даних',
-            teacher: 'Петренко П.П.',
-            progress: 60,
-            students: 38,
-            color: 'hsl(200, 98%, 55%)'
-        },
-        {
-            id: 3,
-            name: 'Алгоритми',
-            teacher: 'Сидоренко С.С.',
-            progress: 45,
-            students: 45,
-            color: 'hsl(142, 71%, 45%)'
-        },
-        {
-            id: 4,
-            name: 'Математика',
-            teacher: 'Коваленко К.К.',
-            progress: 80,
-            students: 50,
-            color: 'hsl(330, 85%, 60%)'
+    const [courses, setCourses] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        loadCourses()
+    }, [])
+
+    const loadCourses = async () => {
+        try {
+            setLoading(true)
+            const data = await api.getCourses()
+            setCourses(data)
+        } catch (err) {
+            console.error('Failed to load courses:', err)
+            // Fallback data
+            setCourses([
+                {
+                    id: 1,
+                    name: 'Веб-технології',
+                    teacher: 'Іваненко І.І.',
+                    progress: 75,
+                    students: 42,
+                    color: 'hsl(262, 83%, 58%)'
+                },
+                {
+                    id: 2,
+                    name: 'Бази даних',
+                    teacher: 'Петренко П.П.',
+                    progress: 60,
+                    students: 38,
+                    color: 'hsl(200, 98%, 55%)'
+                },
+                {
+                    id: 3,
+                    name: 'Алгоритми',
+                    teacher: 'Сидоренко С.С.',
+                    progress: 45,
+                    students: 45,
+                    color: 'hsl(142, 71%, 45%)'
+                },
+                {
+                    id: 4,
+                    name: 'Математика',
+                    teacher: 'Коваленко К.К.',
+                    progress: 80,
+                    students: 50,
+                    color: 'hsl(330, 85%, 60%)'
+                }
+            ])
+        } finally {
+            setLoading(false)
         }
-    ]
+    }
+
+    if (loading) {
+        return (
+            <div className="courses-page">
+                <div className="container">
+                    <div className="loading-state">
+                        <div className="spinner"></div>
+                        <p>Завантаження курсів...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="courses-page">

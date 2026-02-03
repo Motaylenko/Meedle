@@ -1,21 +1,61 @@
+import { useState, useEffect } from 'react'
+import api from '../services/api'
 import './Grades.css'
 
 function Grades() {
-    const grades = [
-        { course: 'Веб-технології', grade: 95, max: 100, color: 'hsl(262, 83%, 58%)' },
-        { course: 'Бази даних', grade: 88, max: 100, color: 'hsl(200, 98%, 55%)' },
-        { course: 'Алгоритми', grade: 92, max: 100, color: 'hsl(142, 71%, 45%)' },
-        { course: 'Математика', grade: 85, max: 100, color: 'hsl(330, 85%, 60%)' }
-    ]
+    const [grades, setGrades] = useState([])
+    const [leaderboard, setLeaderboard] = useState([])
+    const [averageGrade, setAverageGrade] = useState(0)
+    const [loading, setLoading] = useState(true)
 
-    const leaderboard = [
-        { rank: 1, name: 'Олександр Коваленко', points: 1450, avatar: '👨' },
-        { rank: 2, name: 'Марія Петренко', points: 1380, avatar: '👩' },
-        { rank: 3, name: 'Іван Сидоренко', points: 1320, avatar: '👨' },
-        { rank: 12, name: 'Ви', points: 1247, avatar: '🎓', isCurrentUser: true }
-    ]
+    useEffect(() => {
+        loadGradesData()
+    }, [])
 
-    const averageGrade = (grades.reduce((sum, g) => sum + g.grade, 0) / grades.length).toFixed(1)
+    const loadGradesData = async () => {
+        try {
+            setLoading(true)
+            const [gradesData, leaderboardData] = await Promise.all([
+                api.getGrades(),
+                api.getLeaderboard()
+            ])
+
+            setGrades(gradesData.grades)
+            setAverageGrade(gradesData.average)
+            setLeaderboard(leaderboardData)
+        } catch (err) {
+            console.error('Failed to load grades data:', err)
+            // Fallback data
+            setGrades([
+                { course: 'Веб-технології', grade: 95, max: 100, color: 'hsl(262, 83%, 58%)' },
+                { course: 'Бази даних', grade: 88, max: 100, color: 'hsl(200, 98%, 55%)' },
+                { course: 'Алгоритми', grade: 92, max: 100, color: 'hsl(142, 71%, 45%)' },
+                { course: 'Математика', grade: 85, max: 100, color: 'hsl(330, 85%, 60%)' }
+            ])
+            setAverageGrade(90.0)
+            setLeaderboard([
+                { rank: 1, name: 'Олександр Коваленко', points: 1450, avatar: '👨' },
+                { rank: 2, name: 'Марія Петренко', points: 1380, avatar: '👩' },
+                { rank: 3, name: 'Іван Сидоренко', points: 1320, avatar: '👨' },
+                { rank: 12, name: 'Ви', points: 1247, avatar: '🎓', isCurrentUser: true }
+            ])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="grades-page">
+                <div className="container">
+                    <div className="loading-state">
+                        <div className="spinner"></div>
+                        <p>Завантаження оцінок...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="grades-page">
