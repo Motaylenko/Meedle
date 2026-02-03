@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
 import Schedule from './pages/Schedule'
 import Courses from './pages/Courses'
+import CoursePage from './pages/CoursePage'
 import Grades from './pages/Grades'
 import Profile from './pages/Profile'
 import './App.css'
@@ -31,6 +32,7 @@ function App() {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/schedule" element={<Schedule />} />
                         <Route path="/courses" element={<Courses />} />
+                        <Route path="/courses/:courseId" element={<CoursePage />} />
                         <Route path="/grades" element={<Grades />} />
                         <Route path="/profile" element={<Profile />} />
                     </Routes>

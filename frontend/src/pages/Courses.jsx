@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import './Courses.css'
 
 function Courses() {
+    const navigate = useNavigate()
     const [courses, setCourses] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -111,7 +113,10 @@ function Courses() {
                                 </div>
                             </div>
 
-                            <button className="course-button">
+                            <button
+                                className="course-button"
+                                onClick={() => navigate(`/courses/${course.id}`)}
+                            >
                                 Перейти до курсу →
                             </button>
                         </div>

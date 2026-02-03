@@ -31,6 +31,10 @@ class ApiService {
         return this.request(`/courses/${id}`);
     }
 
+    async getCourseDetails(id) {
+        return this.request(`/courses/${id}/details`);
+    }
+
     // Schedule
     async getSchedule() {
         return this.request('/schedule');

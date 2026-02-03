@@ -255,6 +255,103 @@ app.get('/api/courses/:id', (req, res) => {
   }
 });
 
+app.get('/api/courses/:id/details', (req, res) => {
+  const courseId = parseInt(req.params.id);
+  const course = mockData.courses.find(c => c.id === courseId);
+
+  if (!course) {
+    return res.status(404).json({ error: 'Course not found' });
+  }
+
+  // Mock detailed course data
+  const courseDetails = {
+    ...course,
+    description: `Курс присвячений вивченню ${course.name.toLowerCase()}. Включає теоретичні лекції, практичні заняття та проєктну роботу.`,
+    materials: [
+      {
+        id: 1,
+        type: 'lecture',
+        title: `Вступ до ${course.name}`,
+        description: 'Основні поняття та інструменти',
+        date: '2026-01-15',
+        files: ['lecture-01.pdf', 'slides-01.pptx']
+      },
+      {
+        id: 2,
+        type: 'lecture',
+        title: 'Теоретичні основи',
+        description: 'Фундаментальні концепції',
+        date: '2026-01-22',
+        files: ['lecture-02.pdf']
+      },
+      {
+        id: 3,
+        type: 'video',
+        title: 'Практичний приклад',
+        description: 'Демонстрація роботи',
+        date: '2026-01-29',
+        duration: '45 хв'
+      }
+    ],
+    assignments: [
+      {
+        id: 1,
+        title: 'Лабораторна робота #1',
+        description: 'Базові завдання з курсу',
+        deadline: '2026-02-10',
+        status: 'submitted',
+        grade: 95
+      },
+      {
+        id: 2,
+        title: 'Лабораторна робота #2',
+        description: 'Поглиблене вивчення теми',
+        deadline: '2026-02-20',
+        status: 'in_progress',
+        grade: null
+      },
+      {
+        id: 3,
+        title: 'Проєктна робота',
+        description: 'Фінальний проєкт курсу',
+        deadline: '2026-03-15',
+        status: 'not_started',
+        grade: null
+      }
+    ],
+    grades: [
+      { name: 'Лабораторна #1', grade: 95, max: 100, date: '2026-02-08' },
+      { name: 'Тест #1', grade: 88, max: 100, date: '2026-02-01' },
+      { name: 'Практична #1', grade: 92, max: 100, date: '2026-01-25' }
+    ],
+    forum: [
+      {
+        id: 1,
+        author: 'Петренко П.П.',
+        title: 'Питання щодо лабораторної роботи',
+        date: '2026-02-03',
+        replies: 5
+      },
+      {
+        id: 2,
+        author: 'Сидоренко С.С.',
+        title: 'Корисні ресурси для вивчення',
+        date: '2026-02-02',
+        replies: 12
+      },
+      {
+        id: 3,
+        author: course.teacher,
+        title: 'Оголошення про екзамен',
+        date: '2026-02-01',
+        replies: 8
+      }
+    ]
+  };
+
+  res.json(courseDetails);
+});
+
 // Schedule endpoints
 app.get('/api/schedule', (req, res) => {
   res.json(mockData.schedule);
