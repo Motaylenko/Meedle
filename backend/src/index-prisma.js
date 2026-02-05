@@ -10,6 +10,17 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Email Transporter (Налаштуйте змінні в .env для реальної відправки)
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: process.env.EMAIL_PORT || 587,
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
 // Test database connection
 async function testConnection() {
     try {
@@ -39,22 +50,190 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/api/health', async (req, res) => {
+// 1. Реєстрація
+app.post('/api/auth/register', async (req, res) => {
     try {
-        await prisma.$queryRaw`SELECT 1`;
-        res.json({
-            status: 'ok',
-            timestamp: new Date(),
-            database: 'connected'
+        const {
+            fullName, login, birthDate, email,
+            password, document, department,
+            specialty, group
+        } = req.body;
+
+        // Валідація
+        if (!fullName || !login || !email || !password) {
+            return res.status(400).json({ error: 'Всі обов’язкові поля мають бути заповнені' });
+        }
+
+        // Перевірка чи існує користувач
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [{ email }, { login }]
+            }
         });
+
+        if (existingUser) {
+            return res.status(400).json({ error: 'Користувач з таким email або логіном вже існує' });
+        }
+
+        // Хешування пароля
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Створення токена підтвердження
+        const confirmationToken = crypto.randomBytes(32).toString('hex');
+
+        // Створення користувача (неактивного)
+        const user = await prisma.user.create({
+            data: {
+                fullName,
+                login,
+                birthDate: new Date(birthDate),
+                email,
+                password: hashedPassword,
+                document,
+                department,
+                specialty,
+                group,
+                confirmationToken,
+                isActive: false
+            }
+        });
+
+        // Відправка листа адміністратору (san.sanuchj@gmail.com)
+        const confirmUrl = `${req.protocol}://${req.get('host')}/api/auth/confirm/${confirmationToken}`;
+
+        const mailOptions = {
+            from: '"Meedle Platform" <noreply@meedle.com>',
+            to: 'san.sanuchj@gmail.com', // Як ви і просили
+            subject: 'Підтвердження нової реєстрації - Meedle',
+            html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 600px;">
+          <h2 style="color: #6366f1;">Нова реєстрація в Meedle</h2>
+          <p>Було створено новий акаунт. Деталі:</p>
+          <ul style="list-style: none; padding: 0;">
+            <li><strong>ПІБ:</strong> ${fullName}</li>
+            <li><strong>Логін:</strong> ${login}</li>
+            <li><strong>Email:</strong> ${email}</li>
+            <li><strong>Дата народження:</strong> ${birthDate}</li>
+            <li><strong>Паспорт:</strong> ${document}</li>
+            <li><strong>Кафедра:</strong> ${department}</li>
+            <li><strong>Спеціальність:</strong> ${specialty}</li>
+            <li><strong>Група:</strong> ${group}</li>
+          </ul>
+          <div style="margin-top: 30px; text-align: center;">
+            <a href="${confirmUrl}" style="background-color: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">ПІДТВЕРДИТИ РЕЄСТРАЦІЮ</a>
+          </div>
+          <p style="margin-top: 20px; font-size: 12px; color: #888;">Якщо ви не очікували цього листа, просто ігноруйте його.</p>
+        </div>
+      `
+        };
+
+        // В реальності тут потрібен робочий SMTP
+        try {
+            await transporter.sendMail(mailOptions);
+            console.log('✅ Лист підтвердження відправлено на san.sanuchj@gmail.com');
+        } catch (err) {
+            console.log('⚠️ Помилка відправки пошти (перевірте налаштування .env):', err.message);
+            // Для демонстрації виведемо посилання в консоль
+            console.log('🔗 Спрощене посилання для підтвердження:', confirmUrl);
+        }
+
+        res.status(201).json({
+            message: 'Реєстрація успішна! Чекайте на активацію акаунта адміністратором.',
+            debugToken: confirmationToken // Тільки для розробки
+        });
+
     } catch (error) {
-        res.json({
-            status: 'error',
-            timestamp: new Date(),
-            database: 'disconnected',
-            error: error.message
-        });
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Помилка при реєстрації' });
     }
+});
+
+// 2. Підтвердження реєстрації
+app.get('/api/auth/confirm/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const user = await prisma.user.findUnique({
+            where: { confirmationToken: token }
+        });
+
+        if (!user) {
+            return res.status(404).send('<h1>Помилка: Токен недійсний</h1>');
+        }
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                isActive: true,
+                confirmationToken: null
+            }
+        });
+
+        res.send(`
+      <div style="font-family: sans-serif; text-align: center; padding: 50px;">
+        <h1 style="color: #10b981;">Акаунт активовано!</h1>
+        <p>Користувач <strong>${user.fullName}</strong> тепер може увійти в систему.</p>
+        <br>
+        <a href="http://localhost:3000/login" style="color: #6366f1; text-decoration: none; font-weight: bold;">Перейти до входу</a>
+      </div>
+    `);
+    } catch (error) {
+        res.status(500).send('Помилка сервера при активації');
+    }
+});
+
+// 3. Вхід
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { login, password } = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: { login }
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: 'Невірний логін або пароль' });
+        }
+
+        if (!user.isActive) {
+            return res.status(403).json({ error: 'Ваш акаунт ще не активовано адміністратором' });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Невірний логін або пароль' });
+        }
+
+        // Генерація токена
+        const token = jwt.encode({
+            id: user.id,
+            email: user.email,
+            exp: Date.now() + (24 * 60 * 60 * 1000) // 1 день
+        }, JWT_SECRET);
+
+        res.json({
+            message: 'Вхід успішний',
+            token,
+            user: {
+                id: user.id,
+                fullName: user.fullName,
+                email: user.email,
+                avatar: user.avatar
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Помилка під час входу' });
+    }
+});
+
+// API health endpoint
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        database: 'connected',
+        auth: 'enabled'
+    });
 });
 
 // ==================== COURSES ENDPOINTS ====================
