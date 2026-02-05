@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -5,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const prisma = require('./prisma');
-require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -875,9 +875,12 @@ app.use((err, req, res, next) => {
 
 // ==================== SERVER START ====================
 
-app.listen(port, () => {
-    console.log(`🚀 Meedle API Server running on port ${port}`);
-    console.log(`📍 http://localhost:${port}`);
+// Слухаємо на 0.0.0.0 для коректної роботи в Docker
+app.listen(port, '0.0.0.0', () => {
+    console.log('========================================');
+    console.log(`🚀 Meedle API Server is LIVE!`);
+    console.log(`📍 URL: http://0.0.0.0:${port}`);
+    console.log(`🌍 External: http://localhost:${port}`);
     console.log(`💾 Database: Prisma + PostgreSQL`);
-    console.log(`📊 Prisma Studio: npm run db:studio`);
+    console.log('========================================');
 });
