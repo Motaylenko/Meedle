@@ -26,15 +26,19 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// Test database connection
+// Test database connection with retry
 async function testConnection() {
-    try {
-        await prisma.$connect();
-        console.log('✅ Connected to PostgreSQL database via Prisma');
-    } catch (error) {
-        console.error('❌ Failed to connect to database:', error.message);
-        console.log('⚠️  Make sure to run: npm run db:push && npm run db:seed');
-    }
+    console.log('⏳ Attempting to connect to database...');
+    // Чекаємо 5 секунд перед першою спробою, щоб DB встигла завантажитись
+    setTimeout(async () => {
+        try {
+            await prisma.$connect();
+            console.log('✅ Connected to PostgreSQL database via Prisma');
+        } catch (error) {
+            console.error('❌ Failed to connect to database:', error.message);
+            console.log('⚠️  Check your DATABASE_URL in .env');
+        }
+    }, 5000);
 }
 
 testConnection();
