@@ -11,13 +11,10 @@ COPY package.json ./
 # Встановлюємо залежності
 RUN npm install --legacy-peer-deps
 
-# Копіюємо схему та генеруємо клієнт
-COPY prisma ./prisma/
-RUN npx prisma generate
-
-# Решта коду
+# Копіюємо весь код (включаючи папку prisma)
 COPY . .
 
 EXPOSE 5000
 
-CMD ["npm", "run", "dev"]
+# Генерація буде відбуватися під час старту або через setup.bat
+CMD ["sh", "-c", "npx prisma generate && npm run dev"]
