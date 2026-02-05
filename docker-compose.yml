@@ -28,7 +28,8 @@ services:
       - /app/node_modules
     environment:
       - PORT=5000
-      - DATABASE_URL=postgres://meedle_user:meedle_password@db:5432/meedle_db
+      - DATABASE_URL=postgresql://meedle_user:meedle_password@db:5432/meedle_db?schema=public
+      - NODE_ENV=development
     depends_on:
       - db
 
