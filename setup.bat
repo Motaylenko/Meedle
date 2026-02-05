@@ -36,9 +36,10 @@ if exist "backend\package-lock.json" del "backend\package-lock.json"
 if exist "frontend\package-lock.json" del "frontend\package-lock.json"
 
 echo.
-echo [5/8] Building Docker containers...
+echo [5/8] Building Docker containers (clean build)...
 echo This might take several minutes...
-docker compose build --pull
+docker compose build --pull --no-cache
+docker image prune -f >nul 2>&1
 if !ERRORLEVEL! NEQ 0 (
     echo.
     echo ERROR: Failed to build containers.

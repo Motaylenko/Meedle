@@ -95,6 +95,7 @@ const Register = () => {
                 setError(data.error || 'Помилка реєстрації');
             }
         } catch (err) {
+            console.error('Registration Fetch Error:', err);
             setError('Не вдалося з’єднатися з сервером');
         } finally {
             setLoading(false);
