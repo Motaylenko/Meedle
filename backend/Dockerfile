@@ -1,32 +1,21 @@
-FROM node:18-slim
+FROM node:18
 
-# Install necessary libraries for Prisma and Node.js
-RUN apt-get update && apt-get install -y \
-    openssl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Встановлюємо лише необхідне для Prisma
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Update npm to latest
-RUN npm install -g npm@latest
-
-# Copy package info
+# Копіюємо лише package.json
 COPY package.json ./
-# We don't copy package-lock.json to avoid Windows/Linux conflicts during setup
-# If it's absolutely needed, uncomment the next line
-# COPY package-lock.json ./
 
-# Install dependencies with flags for better reliability
-RUN npm install --no-audit --no-fund --legacy-peer-deps
+# Встановлюємо залежності (без оновлення npm)
+RUN npm install --legacy-peer-deps
 
-# Copy prisma schema
+# Копіюємо схему та генеруємо клієнт
 COPY prisma ./prisma/
-
-# Generate Prisma Client
 RUN npx prisma generate
 
-# Copy the rest
+# Решта коду
 COPY . .
 
 EXPOSE 5000
