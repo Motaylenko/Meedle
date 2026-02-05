@@ -125,7 +125,6 @@ const Register = () => {
                                     className={styles.diiaBtn}
                                     onClick={handleStartDiia}
                                 >
-                                    <img src="https://diia.gov.ua/favicon.ico" alt="Diia" width="20" />
                                     Використати Дія.Підпис
                                 </button>
                             )}
@@ -204,7 +203,6 @@ const Register = () => {
                 <div className={styles.modalOverlay}>
                     <div className={styles.diiaModal}>
                         <div className={styles.diiaHeader}>
-                            <img src="https://diia.gov.ua/favicon.ico" alt="Diia" width="30" />
                             <h3>Дія.Підпис</h3>
                             <button onClick={() => setShowDiiaQR(false)} className={styles.closeBtn}>×</button>
                         </div>
