@@ -1,10 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const prisma = require('./prisma');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'meedle_secret_key_2025';
 
 // Middleware
 app.use(cors());
@@ -205,11 +210,10 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         // Генерація токена
-        const token = jwt.encode({
+        const token = jwt.sign({
             id: user.id,
-            email: user.email,
-            exp: Date.now() + (24 * 60 * 60 * 1000) // 1 день
-        }, JWT_SECRET);
+            email: user.email
+        }, JWT_SECRET, { expiresIn: '24h' });
 
         res.json({
             message: 'Вхід успішний',
