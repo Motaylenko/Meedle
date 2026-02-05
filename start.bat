@@ -1,31 +1,65 @@
 @echo off
 echo ========================================
 echo    Meedle - Educational Platform
+echo    Docker Version
 echo ========================================
 echo.
 
-echo [1/3] Starting Backend Server...
-start "Meedle Backend" cmd /k "cd /d %~dp0backend && npm run dev"
+REM Check if Docker is installed
+docker --version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Docker is not installed or not running!
+    echo Please install Docker Desktop from https://www.docker.com/products/docker-desktop
+    echo.
+    pause
+    exit /b 1
+)
 
-timeout /t 3 /nobreak > nul
+REM Check if Docker Compose is available
+docker compose version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Docker Compose is not available!
+    echo Please make sure Docker Desktop is running.
+    echo.
+    pause
+    exit /b 1
+)
 
-echo [2/3] Starting Frontend Server...
-start "Meedle Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
+echo [1/3] Stopping any existing containers...
+docker compose down >nul 2>&1
 
-timeout /t 5 /nobreak > nul
+echo [2/3] Building and starting Docker containers...
+echo This may take a few minutes on first run...
+docker compose up -d --build
 
-echo [3/3] Opening Browser...
-start http://localhost:5173
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo ERROR: Failed to start Docker containers!
+    echo Please check Docker Desktop is running.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo.
+echo [3/3] Waiting for services to start...
+timeout /t 10 /nobreak > nul
+
+echo.
+echo Opening Browser...
+start http://localhost:3000
 
 echo.
 echo ========================================
-echo    Meedle is starting!
+echo    Meedle is running in Docker!
 echo ========================================
 echo.
-echo Frontend: http://localhost:5173
+echo Frontend: http://localhost:3000
 echo Backend:  http://localhost:5000
+echo Database: localhost:5432
 echo.
-echo Wait 10-15 seconds for servers to start
+echo To view logs: docker compose logs -f
+echo To stop:      docker compose down
 echo ========================================
 echo.
 pause
