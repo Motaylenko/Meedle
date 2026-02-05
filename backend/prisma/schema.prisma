@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique
+  name            String
+  avatar          String?
+  rating          Int       @default(0)
+  rank            Int?
+  coursesCount    Int       @default(0)
+  completedTasks  Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  enrollments     Enrollment[]
+  grades          Grade[]
+  tasks           Task[]
+  settings        UserSettings?
+
+  @@map("users")
+}
+
+// User Settings model
+model UserSettings {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  theme             String   @default("light")
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  scheduleNotifications Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// Course model
+model Course {
+  id          Int      @id @default(autoincrement())
+  name        String
+  teacher     String
+  color       String
+  materials   Int      @default(0)
+  assignments Int      @default(0)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  enrollments Enrollment[]
+  schedules   Schedule[]
+  grades      Grade[]
+  tasks       Task[]
+
+  @@map("courses")
+}
+
+// Enrollment model (Many-to-Many relationship between User and Course)
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  progress  Int      @default(0)
+  enrolledAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+// Schedule model
+model Schedule {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  day       String
+  date      DateTime
+  time      String
+  endTime   String
+  room      String
+  type      String   // lecture, practice, lab
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("schedules")
+}
+
+// Grade model
+model Grade {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  courseId  Int
+  name      String
+  grade     Float
+  maxGrade  Float    @default(100)
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("grades")
+}
+
+// Task model
+model Task {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  courseId    Int
+  title       String
+  description String?
+  deadline    DateTime
+  status      String   @default("pending") // pending, in-progress, completed
+  points      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+}
+
+// Leaderboard model
+model Leaderboard {
+  id        Int      @id @default(autoincrement())
+  name      String
+  points    Int      @default(0)
+  avatar    String?
+  trend     String   @default("same") // up, down, same
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("leaderboard")
+}
