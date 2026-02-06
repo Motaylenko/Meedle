@@ -3,21 +3,25 @@
 }
 
 .page-header {
-    margin-bottom: 40px;
+    margin-bottom: var(--spacing-2xl);
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 var(--spacing-md);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.header-text {
+    margin-bottom: var(--spacing-md);
 }
 
 .header-text h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-sm);
 }
 
 .header-text p {
     color: var(--color-text-secondary);
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
 }
 
 .add-course-btn {
