@@ -101,6 +101,32 @@ app.post('/api/auth/register', async (req, res) => {
     }
 });
 
+// Middleware for authentication
+const authenticate = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Необхідна авторизація' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.id }
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: 'Користувача не знайдено' });
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        return res.status(401).json({ error: 'Невійний токен' });
+    }
+};
+
 // 3. Вхід
 app.post('/api/auth/login', async (req, res) => {
     try {
@@ -123,6 +149,12 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(401).json({ error: 'Невірний логін або пароль' });
         }
 
+        // Оновлення часу останнього входу
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLogin: new Date() }
+        });
+
         // Генерація токена
         const token = jwt.sign({
             id: user.id,
@@ -141,6 +173,7 @@ app.post('/api/auth/login', async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: 'Помилка під час входу' });
     }
 });
@@ -157,11 +190,13 @@ app.get('/api/health', (req, res) => {
 // ==================== COURSES ENDPOINTS ====================
 
 // Get all courses with enrollment data
-app.get('/api/courses', async (req, res) => {
+app.get('/api/courses', authenticate, async (req, res) => {
     try {
+        const userId = req.user.id;
         const courses = await prisma.course.findMany({
             include: {
                 enrollments: {
+                    where: { userId },
                     select: {
                         progress: true,
                         userId: true,
@@ -195,13 +230,15 @@ app.get('/api/courses', async (req, res) => {
 });
 
 // Get single course by ID
-app.get('/api/courses/:id', async (req, res) => {
+app.get('/api/courses/:id', authenticate, async (req, res) => {
     try {
+        const userId = req.user.id;
         const courseId = parseInt(req.params.id);
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             include: {
                 enrollments: {
+                    where: { userId },
                     select: {
                         progress: true,
                     },
@@ -314,7 +351,7 @@ app.get('/api/courses/:id/details', async (req, res) => {
 // ==================== SCHEDULE ENDPOINTS ====================
 
 // Get full schedule
-app.get('/api/schedule', async (req, res) => {
+app.get('/api/schedule', authenticate, async (req, res) => {
     try {
         const schedules = await prisma.schedule.findMany({
             include: {
@@ -362,7 +399,7 @@ app.get('/api/schedule', async (req, res) => {
 });
 
 // Get today's schedule
-app.get('/api/schedule/today', async (req, res) => {
+app.get('/api/schedule/today', authenticate, async (req, res) => {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -410,14 +447,9 @@ app.get('/api/schedule/today', async (req, res) => {
 // ==================== GRADES ENDPOINTS ====================
 
 // Get all grades for current user
-app.get('/api/grades', async (req, res) => {
+app.get('/api/grades', authenticate, async (req, res) => {
     try {
-        // For now, we'll use the first user (you can add authentication later)
-        const user = await prisma.user.findFirst();
-
-        if (!user) {
-            return res.json({ grades: [], average: 0 });
-        }
+        const user = req.user;
 
         const grades = await prisma.grade.findMany({
             where: { userId: user.id },
@@ -519,13 +551,9 @@ app.get('/api/leaderboard/top/:count', async (req, res) => {
 // ==================== TASKS ENDPOINTS ====================
 
 // Get all tasks
-app.get('/api/tasks', async (req, res) => {
+app.get('/api/tasks', authenticate, async (req, res) => {
     try {
-        const user = await prisma.user.findFirst();
-
-        if (!user) {
-            return res.json([]);
-        }
+        const user = req.user;
 
         const tasks = await prisma.task.findMany({
             where: { userId: user.id },
@@ -556,13 +584,9 @@ app.get('/api/tasks', async (req, res) => {
 });
 
 // Get active tasks
-app.get('/api/tasks/active', async (req, res) => {
+app.get('/api/tasks/active', authenticate, async (req, res) => {
     try {
-        const user = await prisma.user.findFirst();
-
-        if (!user) {
-            return res.json([]);
-        }
+        const user = req.user;
 
         const tasks = await prisma.task.findMany({
             where: {
@@ -632,33 +656,30 @@ app.post('/api/tasks/:id/status', async (req, res) => {
 // ==================== USER ENDPOINTS ====================
 
 // Get user profile
-app.get('/api/user', async (req, res) => {
+app.get('/api/user', authenticate, async (req, res) => {
     try {
-        const user = await prisma.user.findFirst({
-            include: {
-                settings: true,
-            },
+        const user = req.user;
+        const settings = await prisma.userSettings.findUnique({
+            where: { userId: user.id }
         });
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
 
         const formattedUser = {
             id: user.id,
-            name: user.name,
+            fullName: user.fullName,
             email: user.email,
             avatar: user.avatar,
             rating: user.rating,
             rank: user.rank,
             coursesCount: user.coursesCount,
             completedTasks: user.completedTasks,
+            firstLogin: user.createdAt,
+            lastLogin: user.lastLogin,
             settings: {
-                theme: user.settings?.theme || 'light',
+                theme: settings?.theme || 'light',
                 notifications: {
-                    email: user.settings?.emailNotifications ?? true,
-                    push: user.settings?.pushNotifications ?? true,
-                    schedule: user.settings?.scheduleNotifications ?? true,
+                    email: settings?.emailNotifications ?? true,
+                    push: settings?.pushNotifications ?? true,
+                    schedule: settings?.scheduleNotifications ?? true,
                 },
             },
         };
@@ -670,15 +691,30 @@ app.get('/api/user', async (req, res) => {
     }
 });
 
-// Update user settings
-app.put('/api/user/settings', async (req, res) => {
+// Update user avatar
+app.put('/api/user/avatar', authenticate, async (req, res) => {
     try {
-        const user = await prisma.user.findFirst();
+        const { avatar } = req.body; // Can be a URL or base64 string
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        const updatedUser = await prisma.user.update({
+            where: { id: req.user.id },
+            data: { avatar }
+        });
 
+        res.json({
+            success: true,
+            avatar: updatedUser.avatar
+        });
+    } catch (error) {
+        console.error('Error updating avatar:', error);
+        res.status(500).json({ error: 'Failed to update avatar' });
+    }
+});
+
+// Update user settings
+app.put('/api/user/settings', authenticate, async (req, res) => {
+    try {
+        const user = req.user;
         const { theme, notifications } = req.body;
 
         const settings = await prisma.userSettings.upsert({
@@ -718,18 +754,9 @@ app.put('/api/user/settings', async (req, res) => {
 // ==================== DASHBOARD ENDPOINTS ====================
 
 // Get dashboard stats
-app.get('/api/dashboard/stats', async (req, res) => {
+app.get('/api/dashboard/stats', authenticate, async (req, res) => {
     try {
-        const user = await prisma.user.findFirst();
-
-        if (!user) {
-            return res.json({
-                upcomingClasses: 0,
-                activeTasks: 0,
-                currentRating: 0,
-                ratingPosition: 0,
-            });
-        }
+        const user = req.user;
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);

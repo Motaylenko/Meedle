@@ -2,17 +2,27 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 class ApiService {
     async request(endpoint, options = {}) {
+        const token = localStorage.getItem('token');
         try {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 headers: {
                     'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
                     ...options.headers,
                 },
                 ...options,
             });
 
+            if (response.status === 401) {
+                // Token expired or invalid
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error(`API Error: ${response.statusText}`);
+                const error = await response.json();
+                throw new Error(error.error || `API Error: ${response.statusText}`);
             }
 
             return await response.json();
@@ -83,6 +93,13 @@ class ApiService {
         return this.request('/user/settings', {
             method: 'PUT',
             body: JSON.stringify(settings),
+        });
+    }
+
+    async updateAvatar(avatar) {
+        return this.request('/user/avatar', {
+            method: 'PUT',
+            body: JSON.stringify({ avatar }),
         });
     }
 
