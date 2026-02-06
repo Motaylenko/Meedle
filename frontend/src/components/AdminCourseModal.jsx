@@ -4,34 +4,34 @@ import './AdminCourseModal.css'
 
 function AdminCourseModal({ isOpen, onClose, onCourseCreated }) {
     const [teachers, setTeachers] = useState([])
-    const [students, setStudents] = useState([])
+    const [groups, setGroups] = useState([])
     const [formData, setFormData] = useState({
         name: '',
         teacherId: '',
         teacherName: '',
+        group: '',
         color: '#4F46E5',
-        description: '',
-        selectedStudents: []
+        description: ''
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
     useEffect(() => {
         if (isOpen) {
-            loadTeachersAndStudents()
+            loadTeachersAndGroups()
         }
     }, [isOpen])
 
-    const loadTeachersAndStudents = async () => {
+    const loadTeachersAndGroups = async () => {
         try {
-            const [teachersData, studentsData] = await Promise.all([
+            const [teachersData, groupsData] = await Promise.all([
                 api.getTeachers(),
-                api.getStudents()
+                api.getGroups()
             ])
             setTeachers(teachersData)
-            setStudents(studentsData)
+            setGroups(groupsData)
         } catch (err) {
-            console.error('Failed to load users:', err)
+            console.error('Failed to load data:', err)
         }
     }
 
@@ -49,47 +49,30 @@ function AdminCourseModal({ isOpen, onClose, onCourseCreated }) {
         }
     }
 
-    const handleStudentToggle = (studentId) => {
-        setFormData(prev => {
-            const current = prev.selectedStudents
-            if (current.includes(studentId)) {
-                return { ...prev, selectedStudents: current.filter(id => id !== studentId) }
-            } else {
-                return { ...prev, selectedStudents: [...current, studentId] }
-            }
-        })
-    }
-
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
         setError('')
 
         try {
-            // 1. Create course
-            const course = await api.createCourse({
+            await api.createCourse({
                 name: formData.name,
                 teacherId: formData.teacherId,
                 teacherName: formData.teacherName,
+                group: formData.group,
                 color: formData.color,
                 description: formData.description
             })
 
-            // 2. Enroll students if any selected
-            if (formData.selectedStudents.length > 0) {
-                await api.enrollStudents(course.id, formData.selectedStudents)
-            }
-
             onCourseCreated()
             onClose()
-            // Reset form
             setFormData({
                 name: '',
                 teacherId: '',
                 teacherName: '',
+                group: '',
                 color: '#4F46E5',
-                description: '',
-                selectedStudents: []
+                description: ''
             })
         } catch (err) {
             setError(err.message || 'Не вдалося створити курс')
@@ -141,6 +124,22 @@ function AdminCourseModal({ isOpen, onClose, onCourseCreated }) {
                     </div>
 
                     <div className="form-group">
+                        <label>Група студентів</label>
+                        <select
+                            name="group"
+                            value={formData.group}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Оберіть групу</option>
+                            {groups.map(g => (
+                                <option key={g} value={g}>{g}</option>
+                            ))}
+                        </select>
+                        {groups.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '5px' }}>Груп не знайдено. Переконайтеся, що у студентів вказано групу.</p>}
+                    </div>
+
+                    <div className="form-group">
                         <label>Колір курсу</label>
                         <input
                             type="color"
@@ -159,23 +158,6 @@ function AdminCourseModal({ isOpen, onClose, onCourseCreated }) {
                             rows="3"
                             placeholder="Короткий опис дисципліни..."
                         />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Призначити студентів ({formData.selectedStudents.length})</label>
-                        <div className="multi-select-container">
-                            {students.map(student => (
-                                <label key={student.id} className="student-option">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.selectedStudents.includes(student.id)}
-                                        onChange={() => handleStudentToggle(student.id)}
-                                    />
-                                    <span>{student.fullName} {student.group ? `(${student.group})` : ''}</span>
-                                </label>
-                            ))}
-                            {students.length === 0 && <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Студентів не знайдено</p>}
-                        </div>
                     </div>
 
                     <div className="modal-footer">

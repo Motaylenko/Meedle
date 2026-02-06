@@ -121,6 +121,10 @@ class ApiService {
         return this.request('/admin/teachers');
     }
 
+    async getGroups() {
+        return this.request('/admin/groups');
+    }
+
     async getStudents() {
         return this.request('/admin/students');
     }

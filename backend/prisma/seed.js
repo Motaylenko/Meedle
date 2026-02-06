@@ -14,6 +14,7 @@ async function main() {
             password: '$2b$10$YourHashedPasswordHere', // student123 (симуляція хешу)
             fullName: 'Студент Meedle',
             role: 'STUDENT',
+            group: 'КІ-21-1',
             avatar: '🎓',
             rating: 1247,
             rank: 12,
@@ -55,6 +56,7 @@ async function main() {
                 name: 'Веб-технології',
                 teacherName: 'Іваненко І.І.',
                 teacherId: teacher.id,
+                group: 'КІ-21-1',
                 color: 'hsl(262, 83%, 58%)',
                 materials: 24,
                 assignments: 8,
@@ -65,6 +67,7 @@ async function main() {
             data: {
                 name: 'Бази даних',
                 teacherName: 'Петренко П.П.',
+                group: 'КІ-21-1',
                 color: 'hsl(200, 98%, 55%)',
                 materials: 18,
                 assignments: 6,
@@ -75,6 +78,7 @@ async function main() {
             data: {
                 name: 'Алгоритми',
                 teacherName: 'Сидоренко С.С.',
+                group: 'КІ-21-2',
                 color: 'hsl(142, 71%, 45%)',
                 materials: 32,
                 assignments: 10,
@@ -85,6 +89,7 @@ async function main() {
             data: {
                 name: 'Математика',
                 teacherName: 'Коваленко К.К.',
+                group: 'КІ-21-2',
                 color: 'hsl(330, 85%, 60%)',
                 materials: 28,
                 assignments: 7,

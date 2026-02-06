@@ -68,6 +68,7 @@ model Course {
   name        String
   teacherId   Int?
   teacherName String?
+  group       String?
   color       String   @default("#4F46E5")
   materials   Int      @default(0)
   assignments Int      @default(0)

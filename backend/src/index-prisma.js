@@ -245,6 +245,7 @@ app.get('/api/courses', authenticate, async (req, res) => {
         const formattedCourses = courses.map(course => ({
             id: course.id,
             name: course.name,
+            group: course.group,
             teacher: course.teacherName || (course.teacher ? course.teacher.fullName : 'Не призначено'),
             teacherId: course.teacherId,
             color: course.color,
@@ -865,20 +866,55 @@ app.get('/api/admin/students', authenticate, isAdmin, async (req, res) => {
     }
 });
 
-// Create new course
+// Get all unique groups
+app.get('/api/admin/groups', authenticate, isAdmin, async (req, res) => {
+    try {
+        const groups = await prisma.user.findMany({
+            where: { role: 'STUDENT', group: { not: null } },
+            select: { group: true },
+            distinct: ['group']
+        });
+        res.json(groups.map(g => g.group));
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch groups' });
+    }
+});
+
+// Create new course with group enrollment
 app.post('/api/admin/courses', authenticate, isAdmin, async (req, res) => {
     try {
-        const { name, teacherId, teacherName, color, description } = req.body;
+        const { name, teacherId, teacherName, color, description, group } = req.body;
 
+        // 1. Create the course
         const course = await prisma.course.create({
             data: {
                 name,
+                group,
                 teacherId: teacherId ? parseInt(teacherId) : null,
                 teacherName,
                 color: color || '#4F46E5',
                 description
             }
         });
+
+        // 2. Automatically enroll students from the specified group
+        if (group) {
+            const studentsInGroup = await prisma.user.findMany({
+                where: { group, role: 'STUDENT' },
+                select: { id: true }
+            });
+
+            if (studentsInGroup.length > 0) {
+                await prisma.enrollment.createMany({
+                    data: studentsInGroup.map(student => ({
+                        userId: student.id,
+                        courseId: course.id,
+                        progress: 0
+                    })),
+                    skipDuplicates: true
+                });
+            }
+        }
 
         res.status(201).json(course);
     } catch (error) {

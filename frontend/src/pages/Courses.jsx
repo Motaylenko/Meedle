@@ -36,7 +36,8 @@ function Courses() {
                     teacher: 'Іваненко І.І.',
                     progress: 75,
                     students: 42,
-                    color: 'hsl(262, 83%, 58%)'
+                    color: 'hsl(262, 83%, 58%)',
+                    group: 'КІ-21-1'
                 },
                 {
                     id: 2,
@@ -44,29 +45,24 @@ function Courses() {
                     teacher: 'Петренко П.П.',
                     progress: 60,
                     students: 38,
-                    color: 'hsl(200, 98%, 55%)'
-                },
-                {
-                    id: 3,
-                    name: 'Алгоритми',
-                    teacher: 'Сидоренко С.С.',
-                    progress: 45,
-                    students: 45,
-                    color: 'hsl(142, 71%, 45%)'
-                },
-                {
-                    id: 4,
-                    name: 'Математика',
-                    teacher: 'Коваленко К.К.',
-                    progress: 80,
-                    students: 50,
-                    color: 'hsl(330, 85%, 60%)'
+                    color: 'hsl(200, 98%, 55%)',
+                    group: 'КІ-21-1'
                 }
             ])
         } finally {
             setLoading(false)
         }
     }
+
+    // Групування курсів за групою
+    const groupedCourses = courses.reduce((acc, course) => {
+        const groupName = course.group || 'Загальні'
+        if (!acc[groupName]) {
+            acc[groupName] = []
+        }
+        acc[groupName].push(course)
+        return acc
+    }, {})
 
     if (loading) {
         return (
@@ -105,48 +101,73 @@ function Courses() {
                     onCourseCreated={loadCourses}
                 />
 
-                <div className="courses-grid">
-                    {courses.map(course => (
-                        <div key={course.id} className="course-card" style={{ '--course-color': course.color }}>
-                            <div className="course-header">
-                                <div className="course-icon" style={{ background: course.color }}>
-                                    📖
-                                </div>
-                                <div className="course-info">
-                                    <h3>{course.name}</h3>
-                                    <p>👨‍🏫 {course.teacher}</p>
-                                </div>
+                {Object.entries(groupedCourses).length > 0 ? (
+                    Object.entries(groupedCourses).map(([groupName, groupCourses]) => (
+                        <div key={groupName} className="course-group-section">
+                            <div className="group-folder-header">
+                                <div className="folder-icon">📂</div>
+                                <h2>Група: {groupName}</h2>
+                                <span className="course-count">{groupCourses.length} курсів</span>
                             </div>
 
-                            <div className="course-stats">
-                                <div className="stat-item">
-                                    <span className="stat-icon">👥</span>
-                                    <span className="stat-value">{course.students} студентів</span>
-                                </div>
-                            </div>
-
-                            <div className="progress-section">
-                                <div className="progress-header">
-                                    <span>Прогрес</span>
-                                    <span className="progress-value">{course.progress}%</span>
-                                </div>
-                                <div className="progress-bar">
+                            <div className="courses-grid">
+                                {groupCourses.map(course => (
                                     <div
-                                        className="progress-fill"
-                                        style={{ width: `${course.progress}%`, background: course.color }}
-                                    ></div>
-                                </div>
-                            </div>
+                                        key={course.id}
+                                        className="course-card"
+                                        style={{ '--course-color': course.color }}
+                                        onClick={() => navigate(`/course/${course.id}`)}
+                                    >
+                                        <div className="course-header">
+                                            <div className="course-icon" style={{ background: course.color }}>
+                                                📖
+                                            </div>
+                                            <div className="course-info">
+                                                <h3>{course.name}</h3>
+                                                <p>👨‍🏫 {course.teacher}</p>
+                                            </div>
+                                        </div>
 
-                            <button
-                                className="course-button"
-                                onClick={() => navigate(`/courses/${course.id}`)}
-                            >
-                                Перейти до курсу →
-                            </button>
+                                        <div className="course-stats">
+                                            <div className="stat-item">
+                                                <span className="stat-icon">👥</span>
+                                                <span className="stat-value">{course.students} студентів</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="progress-section">
+                                            <div className="progress-header">
+                                                <span>Прогрес</span>
+                                                <span className="progress-value">{course.progress}%</span>
+                                            </div>
+                                            <div className="progress-bar-container">
+                                                <div
+                                                    className="progress-bar"
+                                                    style={{ width: `${course.progress}%`, background: course.color }}
+                                                ></div>
+                                            </div>
+                                        </div>
+
+                                        <div className="course-footer">
+                                            <div className="footer-item">
+                                                <span className="footer-icon">📝</span>
+                                                <span>{course.assignments} завдань</span>
+                                            </div>
+                                            <div className="footer-item">
+                                                <span className="footer-icon">📚</span>
+                                                <span>{course.materials} матеріалів</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    ))}
-                </div>
+                    ))
+                ) : (
+                    <div className="empty-state">
+                        <p>📭 Ви ще не записані на жоден курс</p>
+                    </div>
+                )}
             </div>
         </div>
     )
