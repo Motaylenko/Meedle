@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const prisma = require('./prisma');
 
@@ -15,48 +14,30 @@ const JWT_SECRET = process.env.JWT_SECRET || 'meedle_secret_key_2025';
 app.use(cors());
 app.use(express.json());
 
-// Email Transporter (Налаштуйте змінні в .env для реальної відправки)
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
+// Логування запитів для діагностики
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
 });
 
-// Test database connection with retry
+// Підключення до бази даних
 async function testConnection() {
-    console.log('⏳ Attempting to connect to database...');
-    // Чекаємо 5 секунд перед першою спробою, щоб DB встигла завантажитись
-    setTimeout(async () => {
-        try {
-            await prisma.$connect();
-            console.log('✅ Connected to PostgreSQL database via Prisma');
-        } catch (error) {
-            console.error('❌ Failed to connect to database:', error.message);
-            console.log('⚠️  Check your DATABASE_URL in .env');
-        }
-    }, 5000);
+    try {
+        await prisma.$connect();
+        console.log('✅ База даних PostgreSQL підключена успішно');
+    } catch (error) {
+        console.error('❌ Помилка підключення до БД:', error.message);
+    }
 }
-
 testConnection();
 
 // Routes
 app.get('/', (req, res) => {
-    res.json({
-        message: 'Welcome to Meedle API with Prisma',
-        version: '2.0.0',
-        endpoints: {
-            courses: '/api/courses',
-            schedule: '/api/schedule',
-            grades: '/api/grades',
-            leaderboard: '/api/leaderboard',
-            tasks: '/api/tasks',
-            user: '/api/user'
-        }
-    });
+    res.json({ message: 'Meedle API is running' });
+});
+
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date() });
 });
 
 // 1. Реєстрація (пряма, без підтвердження)
