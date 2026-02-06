@@ -245,7 +245,8 @@ app.get('/api/courses', authenticate, async (req, res) => {
         const formattedCourses = courses.map(course => ({
             id: course.id,
             name: course.name,
-            teacher: course.teacher,
+            teacher: course.teacherName || (course.teacher ? course.teacher.fullName : 'Не призначено'),
+            teacherId: course.teacherId,
             color: course.color,
             materials: course.materials,
             assignments: course.assignments,
@@ -289,7 +290,8 @@ app.get('/api/courses/:id', authenticate, async (req, res) => {
         const formattedCourse = {
             id: course.id,
             name: course.name,
-            teacher: course.teacher,
+            teacher: course.teacherName || (course.teacher ? course.teacher.fullName : 'Не призначено'),
+            teacherId: course.teacherId,
             color: course.color,
             materials: course.materials,
             assignments: course.assignments,
@@ -823,6 +825,87 @@ app.get('/api/dashboard/stats', authenticate, async (req, res) => {
     } catch (error) {
         console.error('Error fetching dashboard stats:', error);
         res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+});
+
+// ==================== ADMIN ENDPOINTS ====================
+
+// Middleware for admin check
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'ADMIN') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Доступ заборонено. Потрібні права адміністратора.' });
+    }
+};
+
+// Get all teachers
+app.get('/api/admin/teachers', authenticate, isAdmin, async (req, res) => {
+    try {
+        const teachers = await prisma.user.findMany({
+            where: { role: 'TEACHER' },
+            select: { id: true, fullName: true, email: true }
+        });
+        res.json(teachers);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch teachers' });
+    }
+});
+
+// Get all students
+app.get('/api/admin/students', authenticate, isAdmin, async (req, res) => {
+    try {
+        const students = await prisma.user.findMany({
+            where: { role: 'STUDENT' },
+            select: { id: true, fullName: true, email: true, group: true }
+        });
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch students' });
+    }
+});
+
+// Create new course
+app.post('/api/admin/courses', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { name, teacherId, teacherName, color, description } = req.body;
+
+        const course = await prisma.course.create({
+            data: {
+                name,
+                teacherId: teacherId ? parseInt(teacherId) : null,
+                teacherName,
+                color: color || '#4F46E5',
+                description
+            }
+        });
+
+        res.status(201).json(course);
+    } catch (error) {
+        console.error('Error creating course:', error);
+        res.status(500).json({ error: 'Failed to create course' });
+    }
+});
+
+// Enroll students to course
+app.post('/api/admin/courses/:id/enroll', authenticate, isAdmin, async (req, res) => {
+    try {
+        const courseId = parseInt(req.params.id);
+        const { studentIds } = req.body; // Array of IDs
+
+        const enrollments = await Promise.all(
+            studentIds.map(userId =>
+                prisma.enrollment.upsert({
+                    where: { userId_courseId: { userId, courseId } },
+                    update: {},
+                    create: { userId, courseId }
+                })
+            )
+        );
+
+        res.json({ success: true, count: enrollments.length });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to enroll students' });
     }
 });
 

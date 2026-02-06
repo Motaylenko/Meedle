@@ -39,6 +39,7 @@ model User {
   enrollments     Enrollment[]
   grades          Grade[]
   tasks           Task[]
+  teacherCourses  Course[]      @relation("TeacherCourses")
   settings        UserSettings?
 
   @@map("users")
@@ -65,8 +66,9 @@ model UserSettings {
 model Course {
   id          Int      @id @default(autoincrement())
   name        String
-  teacher     String
-  color       String
+  teacherId   Int?
+  teacherName String?
+  color       String   @default("#4F46E5")
   materials   Int      @default(0)
   assignments Int      @default(0)
   description String?
@@ -74,6 +76,7 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   // Relations
+  teacher     User?    @relation("TeacherCourses", fields: [teacherId], references: [id])
   enrollments Enrollment[]
   schedules   Schedule[]
   grades      Grade[]

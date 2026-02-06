@@ -115,6 +115,29 @@ class ApiService {
             body: JSON.stringify({ subscription }),
         });
     }
+
+    // Admin
+    async getTeachers() {
+        return this.request('/admin/teachers');
+    }
+
+    async getStudents() {
+        return this.request('/admin/students');
+    }
+
+    async createCourse(courseData) {
+        return this.request('/admin/courses', {
+            method: 'POST',
+            body: JSON.stringify(courseData),
+        });
+    }
+
+    async enrollStudents(courseId, studentIds) {
+        return this.request(`/admin/courses/${courseId}/enroll`, {
+            method: 'POST',
+            body: JSON.stringify({ studentIds }),
+        });
+    }
 }
 
 export default new ApiService();

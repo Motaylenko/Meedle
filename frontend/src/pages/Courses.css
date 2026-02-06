@@ -2,6 +2,51 @@
     animation: fadeIn var(--transition-base) ease-out;
 }
 
+.page-header {
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 var(--spacing-md);
+}
+
+.header-text h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.header-text p {
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+}
+
+.add-course-btn {
+    padding: 12px 24px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.add-course-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background: var(--color-primary-dark);
+}
+
+.add-course-btn span {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+
 .courses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

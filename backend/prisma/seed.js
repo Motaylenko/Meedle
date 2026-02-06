@@ -32,12 +32,29 @@ async function main() {
 
     console.log('✅ Created user:', user.email);
 
+    // Create a teacher user
+    const teacher = await prisma.user.upsert({
+        where: { email: 'teacher@meedle.edu' },
+        update: {},
+        create: {
+            email: 'teacher@meedle.edu',
+            login: 'teacher',
+            password: '$2b$10$YourHashedPasswordHere',
+            fullName: 'Викладач Тестовий',
+            role: 'TEACHER',
+            isActive: true,
+        },
+    });
+
+    console.log('✅ Created teacher:', teacher.email);
+
     // Create courses
     const courses = await Promise.all([
         prisma.course.create({
             data: {
                 name: 'Веб-технології',
-                teacher: 'Іваненко І.І.',
+                teacherName: 'Іваненко І.І.',
+                teacherId: teacher.id,
                 color: 'hsl(262, 83%, 58%)',
                 materials: 24,
                 assignments: 8,
@@ -47,7 +64,7 @@ async function main() {
         prisma.course.create({
             data: {
                 name: 'Бази даних',
-                teacher: 'Петренко П.П.',
+                teacherName: 'Петренко П.П.',
                 color: 'hsl(200, 98%, 55%)',
                 materials: 18,
                 assignments: 6,
@@ -57,7 +74,7 @@ async function main() {
         prisma.course.create({
             data: {
                 name: 'Алгоритми',
-                teacher: 'Сидоренко С.С.',
+                teacherName: 'Сидоренко С.С.',
                 color: 'hsl(142, 71%, 45%)',
                 materials: 32,
                 assignments: 10,
@@ -67,7 +84,7 @@ async function main() {
         prisma.course.create({
             data: {
                 name: 'Математика',
-                teacher: 'Коваленко К.К.',
+                teacherName: 'Коваленко К.К.',
                 color: 'hsl(330, 85%, 60%)',
                 materials: 28,
                 assignments: 7,

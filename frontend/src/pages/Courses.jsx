@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import AdminCourseModal from '../components/AdminCourseModal'
 import './Courses.css'
 
 function Courses() {
     const navigate = useNavigate()
     const [courses, setCourses] = useState([])
     const [loading, setLoading] = useState(true)
+    const [isAdmin, setIsAdmin] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     useEffect(() => {
         loadCourses()
+        // Перевірка ролі адміністратора
+        const userJson = localStorage.getItem('user')
+        if (userJson) {
+            const user = JSON.parse(userJson)
+            setIsAdmin(user.role === 'ADMIN')
+        }
     }, [])
 
     const loadCourses = async () => {
@@ -76,9 +85,25 @@ function Courses() {
         <div className="courses-page">
             <div className="container">
                 <div className="page-header">
-                    <h1>📚 Мої курси</h1>
-                    <p>Всі ваші навчальні дисципліни</p>
+                    <div className="header-text">
+                        <h1>📚 Мої курси</h1>
+                        <p>Всі ваші навчальні дисципліни</p>
+                    </div>
+                    {isAdmin && (
+                        <button
+                            className="add-course-btn"
+                            onClick={() => setIsModalOpen(true)}
+                        >
+                            <span>+</span> Додати курс
+                        </button>
+                    )}
                 </div>
+
+                <AdminCourseModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onCourseCreated={loadCourses}
+                />
 
                 <div className="courses-grid">
                     {courses.map(course => (
