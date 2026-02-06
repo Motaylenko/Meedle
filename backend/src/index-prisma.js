@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
     });
 });
 
-// 1. Реєстрація
+// 1. Реєстрація (пряма, без підтвердження)
 app.post('/api/auth/register', async (req, res) => {
     try {
         const {
@@ -87,10 +87,7 @@ app.post('/api/auth/register', async (req, res) => {
         // Хешування пароля
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Створення токена підтвердження
-        const confirmationToken = crypto.randomBytes(32).toString('hex');
-
-        // Створення користувача (неактивного)
+        // Створення користувача (одразу активного)
         const user = await prisma.user.create({
             data: {
                 fullName,
@@ -102,92 +99,24 @@ app.post('/api/auth/register', async (req, res) => {
                 department,
                 specialty,
                 group,
-                confirmationToken,
-                isActive: false
+                isActive: true // Одразу активний
             }
         });
 
-        // Відправка листа адміністратору (san.sanuchj@gmail.com)
-        const confirmUrl = `${req.protocol}://${req.get('host')}/api/auth/confirm/${confirmationToken}`;
-
-        const mailOptions = {
-            from: '"Meedle Platform" <noreply@meedle.com>',
-            to: 'san.sanuchj@gmail.com', // Як ви і просили
-            subject: 'Підтвердження нової реєстрації - Meedle',
-            html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 600px;">
-          <h2 style="color: #6366f1;">Нова реєстрація в Meedle</h2>
-          <p>Було створено новий акаунт. Деталі:</p>
-          <ul style="list-style: none; padding: 0;">
-            <li><strong>ПІБ:</strong> ${fullName}</li>
-            <li><strong>Логін:</strong> ${login}</li>
-            <li><strong>Email:</strong> ${email}</li>
-            <li><strong>Дата народження:</strong> ${birthDate}</li>
-            <li><strong>Паспорт:</strong> ${document}</li>
-            <li><strong>Кафедра:</strong> ${department}</li>
-            <li><strong>Спеціальність:</strong> ${specialty}</li>
-            <li><strong>Група:</strong> ${group}</li>
-          </ul>
-          <div style="margin-top: 30px; text-align: center;">
-            <a href="${confirmUrl}" style="background-color: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">ПІДТВЕРДИТИ РЕЄСТРАЦІЮ</a>
-          </div>
-          <p style="margin-top: 20px; font-size: 12px; color: #888;">Якщо ви не очікували цього листа, просто ігноруйте його.</p>
-        </div>
-      `
-        };
-
-        // В реальності тут потрібен робочий SMTP
-        try {
-            await transporter.sendMail(mailOptions);
-            console.log('✅ Лист підтвердження відправлено на san.sanuchj@gmail.com');
-        } catch (err) {
-            console.log('⚠️ Помилка відправки пошти (перевірте налаштування .env):', err.message);
-            // Для демонстрації виведемо посилання в консоль
-            console.log('🔗 Спрощене посилання для підтвердження:', confirmUrl);
-        }
+        console.log(`👤 Новий користувач зареєстрований: ${login}`);
 
         res.status(201).json({
-            message: 'Реєстрація успішна! Чекайте на активацію акаунта адміністратором.',
-            debugToken: confirmationToken // Тільки для розробки
+            message: 'Реєстрація успішна! Тепер ви можете увійти до свого акаунту.',
+            user: {
+                id: user.id,
+                fullName: user.fullName,
+                login: user.login
+            }
         });
 
     } catch (error) {
         console.error('Registration error:', error);
         res.status(500).json({ error: 'Помилка при реєстрації' });
-    }
-});
-
-// 2. Підтвердження реєстрації
-app.get('/api/auth/confirm/:token', async (req, res) => {
-    try {
-        const { token } = req.params;
-
-        const user = await prisma.user.findUnique({
-            where: { confirmationToken: token }
-        });
-
-        if (!user) {
-            return res.status(404).send('<h1>Помилка: Токен недійсний</h1>');
-        }
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                isActive: true,
-                confirmationToken: null
-            }
-        });
-
-        res.send(`
-      <div style="font-family: sans-serif; text-align: center; padding: 50px;">
-        <h1 style="color: #10b981;">Акаунт активовано!</h1>
-        <p>Користувач <strong>${user.fullName}</strong> тепер може увійти в систему.</p>
-        <br>
-        <a href="http://localhost:3000/login" style="color: #6366f1; text-decoration: none; font-weight: bold;">Перейти до входу</a>
-      </div>
-    `);
-    } catch (error) {
-        res.status(500).send('Помилка сервера при активації');
     }
 });
 
