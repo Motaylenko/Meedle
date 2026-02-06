@@ -16,6 +16,7 @@ model User {
   email             String    @unique
   login             String    @unique
   password          String
+  role              String    @default("STUDENT")
   fullName          String
   birthDate         DateTime?
   avatar            String?

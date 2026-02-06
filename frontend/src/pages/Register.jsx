@@ -16,6 +16,7 @@ const Register = () => {
         department: '',
         specialty: '',
         group: '',
+        role: 'STUDENT',
     });
 
     const [error, setError] = useState('');
@@ -135,6 +136,32 @@ const Register = () => {
                                 ? 'Дані паспорта та ПІБ завантажено автоматично'
                                 : 'Для реєстрації необхідно надати електронний підпис'}
                         </p>
+                    </div>
+
+                    <div className={styles.inputGroupFull}>
+                        <label>Хто ви?</label>
+                        <div className={styles.roleSelection}>
+                            <label className={formData.role === 'STUDENT' ? styles.roleActive : ''}>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="STUDENT"
+                                    checked={formData.role === 'STUDENT'}
+                                    onChange={handleChange}
+                                />
+                                👨‍🎓 Студент
+                            </label>
+                            <label className={formData.role === 'TEACHER' ? styles.roleActive : ''}>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="TEACHER"
+                                    checked={formData.role === 'TEACHER'}
+                                    onChange={handleChange}
+                                />
+                                👨‍🏫 Викладач
+                            </label>
+                        </div>
                     </div>
 
                     <div className={styles.inputGroupFull}>

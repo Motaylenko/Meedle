@@ -13,6 +13,7 @@ async function main() {
             login: 'student',
             password: '$2b$10$YourHashedPasswordHere', // student123 (симуляція хешу)
             fullName: 'Студент Meedle',
+            role: 'STUDENT',
             avatar: '🎓',
             rating: 1247,
             rank: 12,

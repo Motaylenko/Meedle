@@ -21,16 +21,44 @@ app.use((req, res, next) => {
     next();
 });
 
-// Підключення до бази даних
-async function testConnection() {
+// Підключення до бази даних та ініціалізація
+async function initialize() {
     try {
         await prisma.$connect();
         console.log('✅ База даних PostgreSQL підключена успішно');
+
+        // Створення адміна, якщо його немає
+        const adminEmail = 'zubenkom815@gmail.com';
+        const adminLogin = 'admin';
+        const adminPassword = '88888888';
+
+        const existingAdmin = await prisma.user.findFirst({
+            where: {
+                OR: [{ email: adminEmail }, { login: adminLogin }]
+            }
+        });
+
+        if (!existingAdmin) {
+            const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
+            await prisma.user.create({
+                data: {
+                    email: adminEmail,
+                    login: adminLogin,
+                    password: hashedAdminPassword,
+                    fullName: 'Адміністратор Meedle',
+                    role: 'ADMIN',
+                    isActive: true
+                }
+            });
+            console.log('👑 Адміністратор створений успішно');
+        } else {
+            console.log('ℹ️ Адміністратор вже існує');
+        }
     } catch (error) {
-        console.error('❌ Помилка підключення до БД:', error.message);
+        console.error('❌ Помилка підключення або ініціалізації БД:', error.message);
     }
 }
-testConnection();
+initialize();
 
 // Routes
 app.get('/', (req, res) => {
@@ -81,6 +109,7 @@ app.post('/api/auth/register', async (req, res) => {
                 department,
                 specialty,
                 group,
+                role: req.body.role || 'STUDENT',
                 isActive: true // Одразу активний
             }
         });
@@ -169,7 +198,8 @@ app.post('/api/auth/login', async (req, res) => {
                 id: user.id,
                 fullName: user.fullName,
                 email: user.email,
-                avatar: user.avatar
+                avatar: user.avatar,
+                role: user.role
             }
         });
 
