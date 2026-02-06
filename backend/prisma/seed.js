@@ -10,7 +10,9 @@ async function main() {
         update: {},
         create: {
             email: 'student@meedle.edu',
-            name: 'Студент Meedle',
+            login: 'student',
+            password: '$2b$10$YourHashedPasswordHere', // student123 (симуляція хешу)
+            fullName: 'Студент Meedle',
             avatar: '🎓',
             rating: 1247,
             rank: 12,
