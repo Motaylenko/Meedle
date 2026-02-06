@@ -18,13 +18,22 @@ function Profile() {
 
     const fetchUserData = async () => {
         try {
+            console.log('Fetching user data...')
             const userData = await api.getUser()
+            console.log('User data received:', userData)
             setUser(userData)
-            setTheme(userData.settings.theme)
-            setNotifications(userData.settings.notifications)
+            if (userData.settings) {
+                setTheme(userData.settings.theme || 'light')
+                setNotifications(userData.settings.notifications || {
+                    email: true,
+                    push: true,
+                    schedule: true
+                })
+            }
             setLoading(false)
         } catch (error) {
             console.error('Failed to fetch user data:', error)
+            setError('Не вдалося завантажити дані профілю')
             setLoading(false)
         }
     }
@@ -62,15 +71,23 @@ function Profile() {
         const file = e.target.files[0]
         if (!file) return
 
+        // Перевірка розміру (макс 5мб)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Файл надто великий. Максимальний розмір - 5МБ')
+            return
+        }
+
         const reader = new FileReader()
         reader.onloadend = async () => {
             try {
                 const base64Avatar = reader.result
+                console.log('Updating avatar...')
                 await api.updateAvatar(base64Avatar)
                 setUser(prev => ({ ...prev, avatar: base64Avatar }))
+                console.log('Avatar updated successfully')
             } catch (error) {
-                console.error('Failed to update avatar:', error)
-                alert('Помилка при оновленні аватарки')
+                console.error('Failed to update avatar details:', error)
+                alert(`Помилка: ${error.message || 'Не вдалося оновити аватарку'}`)
             }
         }
         reader.readAsDataURL(file)
@@ -134,8 +151,8 @@ function Profile() {
                                 <input type="file" hidden accept="image/*" onChange={handleAvatarChange} />
                             </label>
                         </div>
-                        <h2>{user?.fullName || 'Студент Meedle'}</h2>
-                        <p className="profile-email">{user?.email || 'student@meedle.edu'}</p>
+                        <h2>{user?.fullName || user?.login || 'Користувач Meedle'}</h2>
+                        <p className="profile-email">{user?.email || 'email@meedle.edu'}</p>
 
                         <div className="profile-stats">
                             <div className="profile-stat">
