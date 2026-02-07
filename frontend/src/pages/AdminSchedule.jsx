@@ -137,15 +137,15 @@ function AdminSchedule() {
         <div className="admin-schedule-page">
             <div className="container">
                 {!selectedGroup ? (
-                    <>
+                    <div className="animate-fade-in">
                         <div className="page-header">
-                            <div>
-                                <h1>🏢 Управління групами</h1>
-                                <p>Виберіть групу для редагування розкладу</p>
+                            <h1>🏢 Управління групами</h1>
+                            <p>Виберіть групу для редагування розкладу</p>
+                            <div style={{ marginTop: 'var(--spacing-lg)' }}>
+                                <button className="add-lesson-btn" style={{ margin: '0 auto' }} onClick={() => setIsGroupModalOpen(true)}>
+                                    + Додати групу
+                                </button>
                             </div>
-                            <button className="add-lesson-btn" onClick={() => setIsGroupModalOpen(true)}>
-                                + Додати групу
-                            </button>
                         </div>
 
                         <div className="groups-grid">
@@ -159,7 +159,7 @@ function AdminSchedule() {
                                 </div>
                             ))}
                         </div>
-                    </>
+                    </div>
                 ) : (
                     <div className="schedule-editor-section">
                         <button className="back-btn" onClick={() => setSelectedGroup(null)}>

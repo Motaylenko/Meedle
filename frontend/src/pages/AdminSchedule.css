@@ -1,40 +1,56 @@
 .admin-schedule-page {
-    padding: 2rem 0;
+    padding: var(--spacing-xl) 0;
     min-height: calc(100vh - 80px);
-    background: var(--bg-secondary);
+    background: var(--color-bg-secondary);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.page-header h1 {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text-primary);
+}
+
+.page-header p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
 }
 
 .groups-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
 }
 
 .group-card {
-    background: var(--bg-primary);
-    border-radius: 1.25rem;
-    padding: 1.5rem;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--spacing-md);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-base);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
 }
 
 .group-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
 }
 
 .group-icon {
     width: 60px;
     height: 60px;
-    border-radius: 1rem;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -44,114 +60,123 @@
 
 .group-info h3 {
     margin: 0;
-    font-size: 1.25rem;
-    color: var(--text-primary);
+    font-size: var(--font-size-xl);
+    color: var(--color-text-primary);
 }
 
 .group-info p {
-    margin: 0.25rem 0 0;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    margin: var(--spacing-xs) 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
 }
 
 /* Schedule Editor Section */
 .schedule-editor-section {
-    margin-top: 2rem;
-    animation: fadeIn 0.4s ease-out;
+    margin-top: var(--spacing-md);
+    animation: fadeIn var(--transition-base) ease-out;
 }
 
 .back-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-xs);
     background: none;
     border: none;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     cursor: pointer;
-    font-size: 1rem;
-    padding: 0.5rem 0;
-    margin-bottom: 1rem;
-    transition: color 0.2s;
+    font-size: var(--font-size-base);
+    padding: var(--spacing-sm) 0;
+    margin-bottom: var(--spacing-md);
+    transition: color var(--transition-fast);
 }
 
 .back-btn:hover {
-    color: var(--primary-color);
+    color: var(--color-primary);
 }
 
 .editor-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--spacing-xl);
+    text-align: left;
+}
+
+.editor-header h1 {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-primary);
 }
 
 .add-lesson-btn {
-    background: var(--primary-color);
+    background: var(--color-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
 }
 
 .add-lesson-btn:hover {
-    opacity: 0.9;
+    background: var(--color-primary-dark);
     transform: scale(1.02);
 }
 
 .admin-schedule-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 1.5rem;
+    gap: var(--spacing-lg);
 }
 
 .admin-day-card {
-    background: var(--bg-primary);
-    border-radius: 1.5rem;
-    padding: 1.5rem;
-    border: 1px solid var(--border-color);
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
 }
 
 .admin-day-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-border);
 }
 
 .admin-day-header h2 {
-    font-size: 1.25rem;
-    color: var(--primary-color);
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
     margin: 0;
 }
 
 .admin-lesson-item {
-    background: var(--bg-secondary);
-    border-radius: 1rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
     position: relative;
     border: 1px solid transparent;
-    transition: all 0.2s;
+    transition: all var(--transition-base);
 }
 
 .admin-lesson-item:hover {
-    border-color: var(--primary-color);
-    background: var(--bg-primary);
+    border-color: var(--color-primary);
+    background: var(--color-bg-primary);
+    box-shadow: var(--shadow-md);
 }
 
 .lesson-actions {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
     display: flex;
-    gap: 0.5rem;
+    gap: var(--spacing-xs);
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity var(--transition-fast);
 }
 
 .admin-lesson-item:hover .lesson-actions {
@@ -161,55 +186,43 @@
 .action-btn {
     width: 32px;
     height: 32px;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
     border: none;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background var(--transition-fast);
 }
 
 .edit-btn {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: var(--color-bg-tertiary);
+    color: var(--color-primary);
 }
 
 .delete-btn {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: hsl(0, 84%, 95%);
+    color: var(--color-error);
 }
 
 .edit-btn:hover {
-    background: #c7d2fe;
+    background: var(--color-border);
 }
 
 .delete-btn:hover {
-    background: #fecaca;
+    background: hsl(0, 84%, 90%);
 }
 
 .temporary-badge {
     position: absolute;
-    bottom: 0.75rem;
-    right: 0.75rem;
-    background: #fef3c7;
-    color: #92400e;
-    font-size: 0.7rem;
+    bottom: var(--spacing-sm);
+    right: var(--spacing-sm);
+    background: var(--color-warning);
+    color: white;
+    font-size: var(--font-size-xs);
     padding: 0.2rem 0.5rem;
-    border-radius: 1rem;
+    border-radius: var(--radius-full);
     font-weight: 600;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* Modal Styles */
@@ -219,97 +232,123 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    animation: fadeIn var(--transition-fast) ease-out;
 }
 
 .modal-content {
-    background: var(--bg-primary);
-    border-radius: 1.5rem;
-    width: 100%;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    width: 95%;
     max-width: 500px;
-    padding: 2rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-xl);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+}
+
+.modal-header h2 {
+    font-size: var(--font-size-2xl);
+    margin: 0;
+    color: var(--color-text-primary);
 }
 
 .close-btn {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 2rem;
     cursor: pointer;
-    color: var(--text-secondary);
+    color: var(--color-text-tertiary);
+    line-height: 1;
 }
 
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--spacing-md);
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    transition: border-color var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: var(--spacing-md);
 }
 
 .checkbox-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
 }
 
 .checkbox-group input {
-    width: auto;
+    width: 20px;
+    height: 20px;
 }
 
 .modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
 }
 
 .cancel-btn {
-    background: none;
-    border: 1px solid var(--border-color);
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
     cursor: pointer;
 }
 
 .save-btn {
-    background: var(--primary-color);
+    background: var(--color-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
     font-weight: 600;
     cursor: pointer;
+}
+
+.save-btn:hover {
+    background: var(--color-primary-dark);
 }
