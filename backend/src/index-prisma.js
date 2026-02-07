@@ -903,6 +903,38 @@ app.post('/api/admin/groups', authenticate, isAdmin, async (req, res) => {
     }
 });
 
+// Delete a group
+app.delete('/api/admin/groups/:id', authenticate, isAdmin, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+
+        // Fetch group to get name for cleanup of legacy fields
+        const group = await prisma.group.findUnique({ where: { id } });
+        if (!group) return res.status(404).json({ error: 'Групу не знайдено' });
+
+        // Atomic transaction to cleanup and delete
+        await prisma.$transaction([
+            // Update users who have this group set as a string (legacy/sync field)
+            prisma.user.updateMany({
+                where: { group: group.name },
+                data: { group: null }
+            }),
+            // Update courses which have this group set as a string
+            prisma.course.updateMany({
+                where: { OR: [{ group: group.name }, { groupId: id }] },
+                data: { group: null, groupId: null }
+            }),
+            // Finally delete the group
+            prisma.group.delete({ where: { id } })
+        ]);
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting group:', error);
+        res.status(500).json({ error: 'Failed to delete group' });
+    }
+});
+
 // Get courses for a specific group
 app.get('/api/admin/groups/:id/courses', authenticate, isAdmin, async (req, res) => {
     try {

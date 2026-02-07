@@ -78,6 +78,17 @@ function AdminSchedule() {
         }
     }
 
+    const handleDeleteGroup = async (e, id) => {
+        e.stopPropagation()
+        if (!window.confirm('Ви впевнені, що хочете видалити цю групу? Це також змінить прив’язку курсів та студентів.')) return
+        try {
+            await api.deleteGroup(id)
+            loadGroups()
+        } catch (err) {
+            alert(err.message)
+        }
+    }
+
     const handleOpenEditLesson = (lesson = null) => {
         if (lesson) {
             setEditingLesson(lesson)
@@ -156,6 +167,13 @@ function AdminSchedule() {
                                         <h3>{group.name}</h3>
                                         <p>Група студентів</p>
                                     </div>
+                                    <button
+                                        className="group-delete-btn"
+                                        onClick={(e) => handleDeleteGroup(e, group.id)}
+                                        title="Видалити групу"
+                                    >
+                                        🗑️
+                                    </button>
                                 </div>
                             ))}
                         </div>

@@ -150,6 +150,12 @@ class ApiService {
         });
     }
 
+    async deleteGroup(id) {
+        return this.request(`/admin/groups/${id}`, {
+            method: 'DELETE',
+        });
+    }
+
     async getGroupCourses(groupId) {
         return this.request(`/admin/groups/${groupId}/courses`);
     }
