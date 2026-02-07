@@ -62,6 +62,20 @@ model UserSettings {
   @@map("user_settings")
 }
 
+// Group model
+model Group {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  courses   Course[]
+  schedules Schedule[]
+
+  @@map("groups")
+}
+
 // Course model
 model Course {
   id          Int      @id @default(autoincrement())
@@ -69,6 +83,7 @@ model Course {
   teacherId   Int?
   teacherName String?
   group       String?
+  groupId     Int?
   color       String   @default("#4F46E5")
   materials   Int      @default(0)
   assignments Int      @default(0)
@@ -78,6 +93,7 @@ model Course {
 
   // Relations
   teacher     User?    @relation("TeacherCourses", fields: [teacherId], references: [id])
+  groupRef    Group?   @relation(fields: [groupId], references: [id])
   enrollments Enrollment[]
   schedules   Schedule[]
   grades      Grade[]
@@ -105,19 +121,22 @@ model Enrollment {
 
 // Schedule model
 model Schedule {
-  id        Int      @id @default(autoincrement())
-  courseId  Int
-  day       String
-  date      DateTime
-  time      String
-  endTime   String
-  room      String
-  type      String   // lecture, practice, lab
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  courseId    Int
+  groupId     Int?
+  day         String
+  date        DateTime?
+  time        String
+  endTime     String
+  room        String
+  type        String   // lecture, practice, lab
+  isTemporary Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@map("schedules")
 }

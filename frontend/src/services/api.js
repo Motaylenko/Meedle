@@ -142,6 +142,34 @@ class ApiService {
             body: JSON.stringify({ studentIds }),
         });
     }
+
+    async createGroup(name) {
+        return this.request('/admin/groups', {
+            method: 'POST',
+            body: JSON.stringify({ name }),
+        });
+    }
+
+    async getGroupCourses(groupId) {
+        return this.request(`/admin/groups/${groupId}/courses`);
+    }
+
+    async saveSchedule(groupId, scheduleData) {
+        return this.request(`/admin/groups/${groupId}/schedule`, {
+            method: 'POST',
+            body: JSON.stringify(scheduleData),
+        });
+    }
+
+    async deleteSchedule(id) {
+        return this.request(`/admin/schedule/${id}`, {
+            method: 'DELETE',
+        });
+    }
+
+    async getGroupSchedule(groupId) {
+        return this.request(`/schedule?groupId=${groupId}`);
+    }
 }
 
 export default new ApiService();

@@ -384,46 +384,53 @@ app.get('/api/courses/:id/details', async (req, res) => {
 
 // ==================== SCHEDULE ENDPOINTS ====================
 
-// Get full schedule
+// Get full schedule (optionally filtered by group)
 app.get('/api/schedule', authenticate, async (req, res) => {
     try {
+        const { groupName, groupId } = req.query;
+
+        const where = {};
+        if (groupId) {
+            where.groupId = parseInt(groupId);
+        } else if (groupName) {
+            where.group = { name: groupName };
+        } else if (req.user.role === 'STUDENT' && req.user.group) {
+            // Default for students: their own group
+            where.group = { name: req.user.group };
+        }
+
         const schedules = await prisma.schedule.findMany({
+            where,
             include: {
                 course: true,
+                group: true,
             },
             orderBy: [
-                { date: 'asc' },
                 { time: 'asc' },
             ],
         });
 
         // Group by day
-        const groupedSchedule = schedules.reduce((acc, schedule) => {
-            const existingDay = acc.find(d => d.day === schedule.day);
+        const dayOrder = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота', 'Неділя'];
 
-            const lesson = {
-                id: schedule.id,
-                time: schedule.time,
-                endTime: schedule.endTime,
-                name: schedule.course.name,
-                teacher: schedule.course.teacher,
-                room: schedule.room,
-                type: schedule.type,
-                courseId: schedule.courseId,
+        const groupedSchedule = dayOrder.map(day => {
+            const dayLessons = schedules.filter(s => s.day === day);
+            return {
+                day,
+                lessons: dayLessons.map(schedule => ({
+                    id: schedule.id,
+                    time: schedule.time,
+                    endTime: schedule.endTime,
+                    name: schedule.course.name,
+                    teacher: schedule.course.teacherName || (schedule.course.teacher ? schedule.course.teacher.fullName : 'Не призначено'),
+                    room: schedule.room,
+                    type: schedule.type,
+                    courseId: schedule.courseId,
+                    isTemporary: schedule.isTemporary,
+                    date: schedule.date ? schedule.date.toISOString().split('T')[0] : null,
+                }))
             };
-
-            if (existingDay) {
-                existingDay.lessons.push(lesson);
-            } else {
-                acc.push({
-                    day: schedule.day,
-                    date: schedule.date.toISOString().split('T')[0],
-                    lessons: [lesson],
-                });
-            }
-
-            return acc;
-        }, []);
+        }).filter(d => d.lessons.length > 0);
 
         res.json(groupedSchedule);
     } catch (error) {
@@ -869,14 +876,98 @@ app.get('/api/admin/students', authenticate, isAdmin, async (req, res) => {
 // Get all unique groups
 app.get('/api/admin/groups', authenticate, isAdmin, async (req, res) => {
     try {
-        const groups = await prisma.user.findMany({
-            where: { role: 'STUDENT', group: { not: null } },
-            select: { group: true },
-            distinct: ['group']
+        const groups = await prisma.group.findMany({
+            orderBy: { name: 'asc' }
         });
-        res.json(groups.map(g => g.group));
+        res.json(groups);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch groups' });
+    }
+});
+
+// Create a new group
+app.post('/api/admin/groups', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { name } = req.body;
+        if (!name) return res.status(400).json({ error: 'Назва групи обов’язкова' });
+
+        const group = await prisma.group.create({
+            data: { name }
+        });
+        res.status(201).json(group);
+    } catch (error) {
+        if (error.code === 'P2002') {
+            return res.status(400).json({ error: 'Група з такою назвою вже існує' });
+        }
+        res.status(500).json({ error: 'Failed to create group' });
+    }
+});
+
+// Get courses for a specific group
+app.get('/api/admin/groups/:id/courses', authenticate, isAdmin, async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.id);
+        const courses = await prisma.course.findMany({
+            where: {
+                OR: [
+                    { groupId },
+                    { groupRef: { id: groupId } }
+                ]
+            }
+        });
+        res.json(courses);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch group courses' });
+    }
+});
+
+// Add/Update schedule entry for a group
+app.post('/api/admin/groups/:id/schedule', authenticate, isAdmin, async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.id);
+        const { id, courseId, day, time, endTime, room, type, date, isTemporary } = req.body;
+
+        const data = {
+            courseId: parseInt(courseId),
+            groupId,
+            day,
+            time,
+            endTime,
+            room,
+            type,
+            isTemporary: !!isTemporary,
+            date: date ? new Date(date) : null
+        };
+
+        let schedule;
+        if (id) {
+            schedule = await prisma.schedule.update({
+                where: { id: parseInt(id) },
+                data
+            });
+        } else {
+            schedule = await prisma.schedule.create({
+                data
+            });
+        }
+
+        res.json(schedule);
+    } catch (error) {
+        console.error('Error saving schedule:', error);
+        res.status(500).json({ error: 'Failed to save schedule' });
+    }
+});
+
+// Delete schedule entry
+app.delete('/api/admin/schedule/:id', authenticate, isAdmin, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        await prisma.schedule.delete({
+            where: { id }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete schedule' });
     }
 });
 

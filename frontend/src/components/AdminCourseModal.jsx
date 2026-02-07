@@ -132,9 +132,12 @@ function AdminCourseModal({ isOpen, onClose, onCourseCreated }) {
                             required
                         >
                             <option value="">Оберіть групу</option>
-                            {groups.map(g => (
-                                <option key={g} value={g}>{g}</option>
-                            ))}
+                            {groups.map(g => {
+                                const groupName = typeof g === 'string' ? g : g.name;
+                                return (
+                                    <option key={groupName} value={groupName}>{groupName}</option>
+                                );
+                            })}
                         </select>
                         {groups.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '5px' }}>Груп не знайдено. Переконайтеся, що у студентів вказано групу.</p>}
                     </div>

@@ -11,12 +11,22 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import './App.css'
 
+import AdminSchedule from './pages/AdminSchedule'
+
 // Компонент для захищених маршрутів
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, adminOnly = false }) => {
     const token = localStorage.getItem('token');
+    const userJson = localStorage.getItem('user');
+    const user = userJson ? JSON.parse(userJson) : null;
+
     if (!token) {
         return <Navigate to="/login" replace />;
     }
+
+    if (adminOnly && user?.role !== 'ADMIN') {
+        return <Navigate to="/" replace />;
+    }
+
     return children;
 };
 
@@ -57,6 +67,11 @@ function App() {
                                     <Route path="/courses/:courseId" element={<CoursePage />} />
                                     <Route path="/grades" element={<Grades />} />
                                     <Route path="/profile" element={<Profile />} />
+                                    <Route path="/admin/schedule" element={
+                                        <ProtectedRoute adminOnly>
+                                            <AdminSchedule />
+                                        </ProtectedRoute>
+                                    } />
                                     <Route path="*" element={<Navigate to="/" replace />} />
                                 </Routes>
                             </main>

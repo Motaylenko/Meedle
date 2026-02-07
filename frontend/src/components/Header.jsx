@@ -4,8 +4,13 @@ import './Header.css'
 function Header({ theme, toggleTheme }) {
     const location = useLocation()
 
+    const userJson = localStorage.getItem('user')
+    const user = userJson ? JSON.parse(userJson) : null
+    const isAdmin = user?.role === 'ADMIN'
+
     const navItems = [
         { path: '/', label: 'Головна', icon: '🏠' },
+        ...(isAdmin ? [{ path: '/admin/schedule', label: 'Адмін-Розклад', icon: '⚙️' }] : []),
         { path: '/schedule', label: 'Розклад', icon: '📅' },
         { path: '/courses', label: 'Курси', icon: '📚' },
         { path: '/grades', label: 'Оцінки', icon: '📊' },
