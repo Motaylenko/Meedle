@@ -176,6 +176,24 @@ class ApiService {
     async getGroupSchedule(groupId) {
         return this.request(`/schedule?groupId=${groupId}`);
     }
+
+    // Bell Schedules
+    async getBellSchedules() {
+        return this.request('/admin/bell-schedules');
+    }
+
+    async saveBellSchedule(bellScheduleData) {
+        return this.request('/admin/bell-schedules', {
+            method: 'POST',
+            body: JSON.stringify(bellScheduleData),
+        });
+    }
+
+    async deleteBellSchedule(id) {
+        return this.request(`/admin/bell-schedules/${id}`, {
+            method: 'DELETE',
+        });
+    }
 }
 
 export default new ApiService();

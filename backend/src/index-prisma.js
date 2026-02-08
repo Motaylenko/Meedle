@@ -427,6 +427,8 @@ app.get('/api/schedule', authenticate, async (req, res) => {
                     type: schedule.type,
                     courseId: schedule.courseId,
                     isTemporary: schedule.isTemporary,
+                    weekType: schedule.weekType,
+                    bellScheduleId: schedule.bellScheduleId,
                     date: schedule.date ? schedule.date.toISOString().split('T')[0] : null,
                 }))
             };
@@ -953,11 +955,66 @@ app.get('/api/admin/groups/:id/courses', authenticate, isAdmin, async (req, res)
     }
 });
 
+// ==================== BELL SCHEDULE ENDPOINTS ====================
+
+// Get all bell schedules
+app.get('/api/admin/bell-schedules', authenticate, isAdmin, async (req, res) => {
+    try {
+        const bellSchedules = await prisma.bellSchedule.findMany({
+            orderBy: { number: 'asc' }
+        });
+        res.json(bellSchedules);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch bell schedules' });
+    }
+});
+
+// Create/Update bell schedule
+app.post('/api/admin/bell-schedules', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { id, number, startTime, endTime } = req.body;
+        const data = {
+            number: parseInt(number),
+            startTime,
+            endTime
+        };
+
+        let bellSchedule;
+        if (id) {
+            bellSchedule = await prisma.bellSchedule.update({
+                where: { id: parseInt(id) },
+                data
+            });
+        } else {
+            bellSchedule = await prisma.bellSchedule.create({
+                data
+            });
+        }
+        res.json(bellSchedule);
+    } catch (error) {
+        console.error('Error saving bell schedule:', error);
+        res.status(500).json({ error: 'Failed to save bell schedule' });
+    }
+});
+
+// Delete bell schedule
+app.delete('/api/admin/bell-schedules/:id', authenticate, isAdmin, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        await prisma.bellSchedule.delete({
+            where: { id }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete bell schedule' });
+    }
+});
+
 // Add/Update schedule entry for a group
 app.post('/api/admin/groups/:id/schedule', authenticate, isAdmin, async (req, res) => {
     try {
         const groupId = parseInt(req.params.id);
-        const { id, courseId, day, time, endTime, room, type, date, isTemporary } = req.body;
+        const { id, courseId, day, time, endTime, room, type, date, isTemporary, weekType, bellScheduleId } = req.body;
 
         const data = {
             courseId: parseInt(courseId),
@@ -968,6 +1025,8 @@ app.post('/api/admin/groups/:id/schedule', authenticate, isAdmin, async (req, re
             room,
             type,
             isTemporary: !!isTemporary,
+            weekType: weekType || 'EVERY',
+            bellScheduleId: bellScheduleId ? parseInt(bellScheduleId) : null,
             date: date ? new Date(date) : null
         };
 

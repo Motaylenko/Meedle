@@ -144,3 +144,33 @@
         width: 100%;
     }
 }
+
+/* New Badges */
+.lesson-time-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.week-type-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    font-weight: 700;
+    width: fit-content;
+    text-align: center;
+    align-self: center;
+}
+
+.week-type-badge.UPPER {
+    background: hsl(210, 100%, 96%);
+    color: hsl(210, 100%, 45%);
+    border: 1px solid hsl(210, 100%, 90%);
+}
+
+.week-type-badge.LOWER {
+    background: hsl(280, 100%, 96%);
+    color: hsl(280, 100%, 45%);
+    border: 1px solid hsl(280, 100%, 90%);
+}

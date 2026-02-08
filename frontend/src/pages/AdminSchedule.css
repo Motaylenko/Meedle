@@ -386,3 +386,94 @@
 .save-btn:hover {
     background: var(--color-primary-dark);
 }
+
+/* New Badges */
+.lesson-time-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.week-type-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    font-weight: 700;
+    width: fit-content;
+}
+
+.week-type-badge.UPPER {
+    background: hsl(210, 100%, 96%);
+    color: hsl(210, 100%, 45%);
+    border: 1px solid hsl(210, 100%, 90%);
+}
+
+.week-type-badge.LOWER {
+    background: hsl(280, 100%, 96%);
+    color: hsl(280, 100%, 45%);
+    border: 1px solid hsl(280, 100%, 90%);
+}
+
+/* Bell Manager Styles */
+.header-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.add-lesson-btn.secondary {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+
+.bell-modal {
+    max-width: 600px;
+}
+
+.bell-manager {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.bell-form {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr auto;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+}
+
+.bell-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: var(--spacing-sm);
+}
+
+.bell-item {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.bell-item span:first-child {
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.save-btn.small,
+.delete-btn.small {
+    padding: 0.5rem 1rem;
+    font-size: var(--font-size-sm);
+}

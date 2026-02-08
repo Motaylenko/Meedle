@@ -77,7 +77,14 @@ function Schedule() {
                             <div className="day-lessons">
                                 {day.lessons.map((lesson, lessonIndex) => (
                                     <div key={lessonIndex} className="schedule-lesson">
-                                        <div className="lesson-time-badge">{lesson.time}</div>
+                                        <div className="lesson-time-container">
+                                            <div className="lesson-time-badge">{lesson.time}</div>
+                                            {lesson.weekType && lesson.weekType !== 'EVERY' && (
+                                                <div className={`week-type-badge ${lesson.weekType}`}>
+                                                    {lesson.weekType === 'UPPER' ? 'Чисельник' : 'Знаменник'}
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="lesson-info">
                                             <div className="lesson-title">{lesson.name}</div>
                                             <div className="lesson-meta">

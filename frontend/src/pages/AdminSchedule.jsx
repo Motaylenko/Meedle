@@ -9,7 +9,10 @@ function AdminSchedule() {
     const [loading, setLoading] = useState(true)
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
     const [isLessonModalOpen, setIsLessonModalOpen] = useState(false)
+    const [isBellModalOpen, setIsBellModalOpen] = useState(false)
     const [newGroupName, setNewGroupName] = useState('')
+    const [bellSchedules, setBellSchedules] = useState([])
+    const [newBell, setNewBell] = useState({ number: '', startTime: '', endTime: '' })
 
     // Lesson Form State
     const [editingLesson, setEditingLesson] = useState(null)
@@ -22,6 +25,8 @@ function AdminSchedule() {
         room: '',
         type: 'lecture',
         isTemporary: false,
+        weekType: 'EVERY',
+        bellScheduleId: '',
         date: ''
     })
 
@@ -29,6 +34,7 @@ function AdminSchedule() {
 
     useEffect(() => {
         loadGroups()
+        loadBellSchedules()
     }, [])
 
     useEffect(() => {
@@ -41,12 +47,20 @@ function AdminSchedule() {
         try {
             setLoading(true)
             const data = await api.getGroups()
-            // Backend now returns object with id and name
             setGroups(data)
         } catch (err) {
             console.error('Failed to load groups:', err)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const loadBellSchedules = async () => {
+        try {
+            const data = await api.getBellSchedules()
+            setBellSchedules(data)
+        } catch (err) {
+            console.error('Failed to load bell schedules:', err)
         }
     }
 
@@ -101,6 +115,8 @@ function AdminSchedule() {
                 room: lesson.room,
                 type: lesson.type,
                 isTemporary: lesson.isTemporary || false,
+                weekType: lesson.weekType || 'EVERY',
+                bellScheduleId: lesson.bellScheduleId || '',
                 date: lesson.date || ''
             })
         } else {
@@ -113,10 +129,49 @@ function AdminSchedule() {
                 room: '',
                 type: 'lecture',
                 isTemporary: false,
+                weekType: 'EVERY',
+                bellScheduleId: '',
                 date: ''
             })
         }
         setIsLessonModalOpen(true)
+    }
+
+    const handleBellSelect = (bellId) => {
+        if (!bellId) {
+            setLessonForm({ ...lessonForm, bellScheduleId: '' })
+            return
+        }
+        const bell = bellSchedules.find(b => b.id === parseInt(bellId))
+        if (bell) {
+            setLessonForm({
+                ...lessonForm,
+                bellScheduleId: bellId,
+                time: bell.startTime,
+                endTime: bell.endTime
+            })
+        }
+    }
+
+    const handleSaveBell = async (e) => {
+        e.preventDefault()
+        try {
+            await api.saveBellSchedule(newBell)
+            setNewBell({ number: '', startTime: '', endTime: '' })
+            loadBellSchedules()
+        } catch (err) {
+            alert(err.message)
+        }
+    }
+
+    const handleDeleteBell = async (id) => {
+        if (!window.confirm('Видалити цей розклад дзвінків?')) return
+        try {
+            await api.deleteBellSchedule(id)
+            loadBellSchedules()
+        } catch (err) {
+            alert(err.message)
+        }
     }
 
     const handleSaveLesson = async (e) => {
@@ -154,9 +209,14 @@ function AdminSchedule() {
                                 <h1>🏢 Управління групами</h1>
                                 <p>Виберіть групу для редагування розкладу</p>
                             </div>
-                            <button className="add-lesson-btn" onClick={() => setIsGroupModalOpen(true)}>
-                                + Додати групу
-                            </button>
+                            <div className="header-actions">
+                                <button className="add-lesson-btn secondary" onClick={() => setIsBellModalOpen(true)}>
+                                    🔔 Розклад дзвінків
+                                </button>
+                                <button className="add-lesson-btn" onClick={() => setIsGroupModalOpen(true)}>
+                                    + Додати групу
+                                </button>
+                            </div>
                         </div>
 
                         <div className="groups-grid">
@@ -205,7 +265,14 @@ function AdminSchedule() {
                                         <div className="admin-lessons-list">
                                             {daySchedule?.lessons.map(lesson => (
                                                 <div key={lesson.id} className="admin-lesson-item">
-                                                    <div className="lesson-time-badge">{lesson.time} - {lesson.endTime}</div>
+                                                    <div className="lesson-time-container">
+                                                        <div className="lesson-time-badge">{lesson.time} - {lesson.endTime}</div>
+                                                        {lesson.weekType !== 'EVERY' && (
+                                                            <div className={`week-type-badge ${lesson.weekType}`}>
+                                                                {lesson.weekType === 'UPPER' ? 'Чисельник' : 'Знаменник'}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <div className="lesson-info">
                                                         <div className="lesson-title">{lesson.name}</div>
                                                         <div className="lesson-meta">
@@ -281,6 +348,31 @@ function AdminSchedule() {
                                     <option value="">Виберіть курс</option>
                                     {groupCourses.map(course => (
                                         <option key={course.id} value={course.id}>{course.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Періодичність</label>
+                                <select
+                                    value={lessonForm.weekType}
+                                    onChange={(e) => setLessonForm({ ...lessonForm, weekType: e.target.value })}
+                                >
+                                    <option value="EVERY">Щотижня</option>
+                                    <option value="UPPER">Верхній тиждень (Чисельник)</option>
+                                    <option value="LOWER">Нижній тиждень (Знаменник)</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Номер пари (автозаповнення часу)</label>
+                                <select
+                                    value={lessonForm.bellScheduleId}
+                                    onChange={(e) => handleBellSelect(e.target.value)}
+                                >
+                                    <option value="">Виберіть пару</option>
+                                    {bellSchedules.map(bell => (
+                                        <option key={bell.id} value={bell.id}>{bell.number} пара ({bell.startTime} - {bell.endTime})</option>
                                     ))}
                                 </select>
                             </div>
@@ -367,6 +459,55 @@ function AdminSchedule() {
                                 <button type="submit" className="save-btn">{editingLesson ? 'Зберегти зміни' : 'Додати'}</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Bell Schedule Modal */}
+            {isBellModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content bell-modal">
+                        <div className="modal-header">
+                            <h2>🔔 Управління розкладом дзвінків</h2>
+                            <button className="close-btn" onClick={() => setIsBellModalOpen(false)}>&times;</button>
+                        </div>
+                        <div className="bell-manager">
+                            <form onSubmit={handleSaveBell} className="bell-form">
+                                <input
+                                    type="number"
+                                    placeholder="№"
+                                    value={newBell.number}
+                                    onChange={e => setNewBell({ ...newBell, number: e.target.value })}
+                                    required
+                                />
+                                <input
+                                    type="time"
+                                    value={newBell.startTime}
+                                    onChange={e => setNewBell({ ...newBell, startTime: e.target.value })}
+                                    required
+                                />
+                                <input
+                                    type="time"
+                                    value={newBell.endTime}
+                                    onChange={e => setNewBell({ ...newBell, endTime: e.target.value })}
+                                    required
+                                />
+                                <button type="submit" className="save-btn small">Додати</button>
+                            </form>
+
+                            <div className="bell-list">
+                                {bellSchedules.map(bell => (
+                                    <div key={bell.id} className="bell-item">
+                                        <span>{bell.number} пара</span>
+                                        <span>{bell.startTime} - {bell.endTime}</span>
+                                        <button onClick={() => handleDeleteBell(bell.id)} className="delete-btn small">🗑️</button>
+                                    </div>
+                                ))}
+                                {bellSchedules.length === 0 && <p className="empty-text">Розклад дзвінків не налаштовано</p>}
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="save-btn" onClick={() => setIsBellModalOpen(false)}>Закрити</button>
+                        </div>
                     </div>
                 </div>
             )}

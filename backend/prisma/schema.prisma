@@ -121,24 +121,41 @@ model Enrollment {
 
 // Schedule model
 model Schedule {
-  id          Int      @id @default(autoincrement())
-  courseId    Int
-  groupId     Int?
-  day         String
-  date        DateTime?
-  time        String
-  endTime     String
-  room        String
-  type        String   // lecture, practice, lab
-  isTemporary Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              Int           @id @default(autoincrement())
+  courseId        Int
+  groupId         Int?
+  day             String
+  date            DateTime?
+  time            String
+  endTime         String
+  room            String
+  type            String        // lecture, practice, lab
+  isTemporary     Boolean       @default(false)
+  weekType        String        @default("EVERY") // EVERY, UPPER, LOWER
+  bellScheduleId  Int?
+  bellSchedule    BellSchedule? @relation(fields: [bellScheduleId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   // Relations
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@map("schedules")
+}
+
+// Bell Schedule model
+model BellSchedule {
+  id        Int      @id @default(autoincrement())
+  number    Int      @unique
+  startTime String   // "08:30"
+  endTime   String   // "09:50"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  schedules Schedule[]
+
+  @@map("bell_schedules")
 }
 
 // Grade model
