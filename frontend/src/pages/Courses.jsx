@@ -198,7 +198,7 @@ function Courses() {
                                                     key={course.id}
                                                     className="course-card"
                                                     style={{ '--course-color': course.color }}
-                                                    onClick={() => navigate(`/course/${course.id}`)}
+                                                    onClick={() => navigate(`/courses/${course.id}`)}
                                                 >
                                                     <div className="course-header">
                                                         <div className="course-icon" style={{ background: course.color }}>
@@ -207,13 +207,6 @@ function Courses() {
                                                         <div className="course-info">
                                                             <h3>{course.name}</h3>
                                                             <p>👨‍🏫 {course.teacher}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="course-stats">
-                                                        <div className="stat-item">
-                                                            <span className="stat-icon">👥</span>
-                                                            <span className="stat-value">{course.students} студентів</span>
                                                         </div>
                                                     </div>
 
@@ -233,12 +226,15 @@ function Courses() {
                                                     <div className="course-footer">
                                                         <div className="footer-item">
                                                             <span className="footer-icon">📝</span>
-                                                            <span>{course.assignments} завдань</span>
+                                                            <span>{course.assignments || 0} завдань</span>
                                                         </div>
                                                         <div className="footer-item">
                                                             <span className="footer-icon">📚</span>
-                                                            <span>{course.materials} матеріалів</span>
+                                                            <span>{course.materials || 0} матеріалів</span>
                                                         </div>
+                                                        <button className="enter-course-btn">
+                                                            Ввійти ➜
+                                                        </button>
                                                     </div>
                                                 </div>
                                             ))}
