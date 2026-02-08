@@ -420,6 +420,23 @@
 .header-actions {
     display: flex;
     gap: var(--spacing-md);
+    align-items: center;
+}
+
+.group-search-input {
+    padding: 10px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    min-width: 200px;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.group-search-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
 }
 
 .add-lesson-btn.secondary {

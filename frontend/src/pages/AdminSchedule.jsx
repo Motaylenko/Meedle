@@ -13,6 +13,7 @@ function AdminSchedule() {
     const [newGroupName, setNewGroupName] = useState('')
     const [bellSchedules, setBellSchedules] = useState([])
     const [newBell, setNewBell] = useState({ number: '', startTime: '', endTime: '' })
+    const [groupSearchQuery, setGroupSearchQuery] = useState('')
 
     // Lesson Form State
     const [editingLesson, setEditingLesson] = useState(null)
@@ -210,6 +211,15 @@ function AdminSchedule() {
                                 <p>Виберіть групу для редагування розкладу</p>
                             </div>
                             <div className="header-actions">
+                                <div className="search-box">
+                                    <input
+                                        type="text"
+                                        placeholder="🔍 Пошук групи..."
+                                        value={groupSearchQuery}
+                                        onChange={(e) => setGroupSearchQuery(e.target.value)}
+                                        className="group-search-input"
+                                    />
+                                </div>
                                 <button className="add-lesson-btn secondary" onClick={() => setIsBellModalOpen(true)}>
                                     🔔 Розклад дзвінків
                                 </button>
@@ -220,7 +230,7 @@ function AdminSchedule() {
                         </div>
 
                         <div className="groups-grid">
-                            {groups.map(group => (
+                            {groups.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).map(group => (
                                 <div key={group.id} className="group-card" onClick={() => setSelectedGroup(group)}>
                                     <div className="group-icon">👥</div>
                                     <div className="group-info">
