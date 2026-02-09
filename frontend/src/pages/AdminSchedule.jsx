@@ -7,10 +7,8 @@ function AdminSchedule() {
     const [selectedGroup, setSelectedGroup] = useState(null)
     const [schedule, setSchedule] = useState([])
     const [loading, setLoading] = useState(true)
-    const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
     const [isLessonModalOpen, setIsLessonModalOpen] = useState(false)
     const [isBellModalOpen, setIsBellModalOpen] = useState(false)
-    const [newGroupName, setNewGroupName] = useState('')
     const [bellSchedules, setBellSchedules] = useState([])
     const [newBell, setNewBell] = useState({ number: '', startTime: '', endTime: '' })
     const [groupSearchQuery, setGroupSearchQuery] = useState('')
@@ -31,7 +29,7 @@ function AdminSchedule() {
         date: ''
     })
 
-    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота', 'Неділя']
+    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота']
 
     useEffect(() => {
         loadGroups()
@@ -81,17 +79,7 @@ function AdminSchedule() {
         }
     }
 
-    const handleCreateGroup = async (e) => {
-        e.preventDefault()
-        try {
-            await api.createGroup(newGroupName)
-            setNewGroupName('')
-            setIsGroupModalOpen(false)
-            loadGroups()
-        } catch (err) {
-            alert(err.message)
-        }
-    }
+
 
     const handleDeleteGroup = async (e, id) => {
         e.stopPropagation()
@@ -222,9 +210,6 @@ function AdminSchedule() {
                                 </div>
                                 <button className="add-lesson-btn secondary" onClick={() => setIsBellModalOpen(true)}>
                                     🔔 Розклад дзвінків
-                                </button>
-                                <button className="add-lesson-btn" onClick={() => setIsGroupModalOpen(true)}>
-                                    + Додати групу
                                 </button>
                             </div>
                         </div>
@@ -407,27 +392,6 @@ function AdminSchedule() {
                                         <option value="practice">Практика</option>
                                         <option value="lab">Лабораторна</option>
                                     </select>
-                                </div>
-                            </div>
-
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Початок</label>
-                                    <input
-                                        type="time"
-                                        value={lessonForm.time}
-                                        onChange={(e) => setLessonForm({ ...lessonForm, time: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Кінець</label>
-                                    <input
-                                        type="time"
-                                        value={lessonForm.endTime}
-                                        onChange={(e) => setLessonForm({ ...lessonForm, endTime: e.target.value })}
-                                        required
-                                    />
                                 </div>
                             </div>
 

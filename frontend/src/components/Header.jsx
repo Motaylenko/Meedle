@@ -10,8 +10,12 @@ function Header({ theme, toggleTheme }) {
 
     const navItems = [
         { path: '/', label: 'Головна', icon: '🏠' },
-        ...(isAdmin ? [{ path: '/admin/schedule', label: 'Адмін-Розклад', icon: '⚙️' }] : []),
-        { path: '/schedule', label: 'Розклад', icon: '📅' },
+        ...(isAdmin ? [
+            { path: '/admin/schedule', label: 'Адмін-Розклад', icon: '⚙️' },
+            { path: '/admin/groups', label: 'Групи', icon: '👥' }
+        ] : [
+            { path: '/schedule', label: 'Розклад', icon: '📅' }
+        ]),
         { path: '/courses', label: 'Курси', icon: '📚' },
         { path: '/grades', label: 'Оцінки', icon: '📊' },
         { path: '/profile', label: 'Профіль', icon: '👤' }

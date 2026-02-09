@@ -129,6 +129,17 @@ class ApiService {
         return this.request('/admin/students');
     }
 
+    async getUsers() {
+        return this.request('/admin/users');
+    }
+
+    async updateStudentGroup(studentId, groupName) {
+        return this.request(`/admin/students/${studentId}/group`, {
+            method: 'PUT',
+            body: JSON.stringify({ groupName }),
+        });
+    }
+
     async createCourse(courseData) {
         return this.request('/admin/courses', {
             method: 'POST',
