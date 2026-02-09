@@ -875,46 +875,6 @@ app.get('/api/admin/students', authenticate, isAdmin, async (req, res) => {
     }
 });
 
-// Get all users
-app.get('/api/admin/users', authenticate, isAdmin, async (req, res) => {
-    try {
-        const users = await prisma.user.findMany({
-            select: {
-                id: true,
-                fullName: true,
-                email: true,
-                role: true,
-                group: true,
-                avatar: true,
-                rating: true
-            },
-            orderBy: { fullName: 'asc' }
-        });
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch users' });
-    }
-});
-
-// Update student's group
-app.put('/api/admin/students/:id/group', authenticate, isAdmin, async (req, res) => {
-    try {
-        const studentId = parseInt(req.params.id);
-        const { groupName } = req.body;
-
-        const updatedStudent = await prisma.user.update({
-            where: { id: studentId },
-            data: { group: groupName },
-            select: { id: true, fullName: true, email: true, group: true }
-        });
-
-        res.json(updatedStudent);
-    } catch (error) {
-        console.error('Error updating student group:', error);
-        res.status(500).json({ error: 'Failed to update student group' });
-    }
-});
-
 // Get all unique groups
 app.get('/api/admin/groups', authenticate, isAdmin, async (req, res) => {
     try {
