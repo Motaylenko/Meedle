@@ -20,12 +20,21 @@ class ApiService {
                 return;
             }
 
+            const contentType = response.headers.get('content-type');
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || `API Error: ${response.statusText}`);
+                if (contentType && contentType.includes('application/json')) {
+                    const error = await response.json();
+                    throw new Error(error.error || `API Error: ${response.status}`);
+                } else {
+                    const text = await response.text();
+                    throw new Error(`API Error (${response.status}): ${text.slice(0, 100)}...`);
+                }
             }
 
-            return await response.json();
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            }
+            return await response.text();
         } catch (error) {
             console.error('API Request failed:', error);
             throw error;

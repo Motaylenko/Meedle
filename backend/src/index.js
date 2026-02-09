@@ -435,6 +435,21 @@ app.post('/api/notifications/subscribe', (req, res) => {
   res.json({ success: true, message: 'Subscribed to notifications' });
 });
 
+// Admin dashboard stats (mock)
+app.get('/api/admin/dashboard/stats', (req, res) => {
+  res.json({
+    studentCount: 120,
+    teacherCount: 15,
+    groupCount: 8,
+    courseCount: 12
+  });
+});
+
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ error: `Route ${req.originalUrl} not found` });
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);

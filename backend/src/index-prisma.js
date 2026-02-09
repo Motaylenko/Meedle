@@ -1202,8 +1202,12 @@ app.post('/api/notifications/subscribe', (req, res) => {
     res.json({ success: true, message: 'Subscribed to notifications' });
 });
 
-// ==================== ERROR HANDLING ====================
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ error: `Route ${req.originalUrl} not found` });
+});
 
+// Error handling
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
