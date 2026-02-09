@@ -838,6 +838,15 @@ app.get('/api/dashboard/stats', authenticate, async (req, res) => {
     }
 });
 
+// Middleware for admin check
+const isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'ADMIN') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Доступ заборонено. Потрібні права адміністратора.' });
+    }
+};
+
 // Get admin dashboard stats
 app.get('/api/admin/dashboard/stats', authenticate, isAdmin, async (req, res) => {
     try {
@@ -859,18 +868,6 @@ app.get('/api/admin/dashboard/stats', authenticate, isAdmin, async (req, res) =>
         res.status(500).json({ error: 'Failed to fetch admin dashboard stats' });
     }
 });
-
-
-// ==================== ADMIN ENDPOINTS ====================
-
-// Middleware for admin check
-const isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'ADMIN') {
-        next();
-    } else {
-        res.status(403).json({ error: 'Доступ заборонено. Потрібні права адміністратора.' });
-    }
-};
 
 // Get all teachers
 app.get('/api/admin/teachers', authenticate, isAdmin, async (req, res) => {

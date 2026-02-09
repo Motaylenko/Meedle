@@ -56,34 +56,19 @@ function Dashboard() {
             }
         } catch (err) {
             console.error('Failed to load dashboard data:', err)
-            setError('Не вдалося завантажити дані. Використовуються демо-дані.')
+            setError(`Не вдалося завантажити дані: ${err.message}`)
 
-            if (isAdmin) {
-                setStats({
-                    studentCount: 120,
-                    teacherCount: 15,
-                    groupCount: 8,
-                    courseCount: 12
-                })
-            } else {
-                // Use fallback data
-                setStats({
-                    upcomingClasses: 3,
-                    activeTasks: 7,
-                    currentRating: 1247,
-                    ratingPosition: 12
-                })
-                setUpcomingLessons([
-                    { id: 1, name: 'Веб-технології', time: '09:00', room: 'Ауд. 301', type: 'lecture' },
-                    { id: 2, name: 'Бази даних', time: '10:45', room: 'Ауд. 205', type: 'practice' },
-                    { id: 3, name: 'Алгоритми', time: '13:00', room: 'Ауд. 412', type: 'lecture' }
-                ])
-                setRecentTasks([
-                    { id: 1, course: 'Веб-технології', task: 'Лабораторна робота #3', deadline: '2026-02-05', status: 'pending' },
-                    { id: 2, course: 'Бази даних', task: 'Проєктування схеми БД', deadline: '2026-02-07', status: 'in-progress' },
-                    { id: 3, course: 'Алгоритми', task: 'Домашнє завдання #5', deadline: '2026-02-10', status: 'pending' }
-                ])
-            }
+            // Revert stats to 0s on error to avoid showing stale or mock data
+            setStats({
+                upcomingClasses: 0,
+                activeTasks: 0,
+                currentRating: 0,
+                ratingPosition: 0,
+                studentCount: 0,
+                teacherCount: 0,
+                groupCount: 0,
+                courseCount: 0
+            })
         } finally {
             setLoading(false)
         }
@@ -209,34 +194,7 @@ function Dashboard() {
                 <div className="content-grid">
                     {isAdmin ? (
                         <>
-                            <div className="card">
-                                <div className="card-header">
-                                    <h2>Керування ресурсами</h2>
-                                </div>
-                                <div className="quick-actions-grid">
-                                    <a href="/admin/groups" className="action-item">
-                                        <span className="action-icon">👥</span>
-                                        <div className="action-details">
-                                            <span className="action-title">Групи та студенти</span>
-                                            <span className="action-desc">Створення груп, додавання студентів</span>
-                                        </div>
-                                    </a>
-                                    <a href="/admin/schedule" className="action-item">
-                                        <span className="action-icon">📅</span>
-                                        <div className="action-details">
-                                            <span className="action-title">Розклад занять</span>
-                                            <span className="action-desc">Редагування графіку та дзвінків</span>
-                                        </div>
-                                    </a>
-                                    <a href="/courses" className="action-item">
-                                        <span className="action-icon">📚</span>
-                                        <div className="action-details">
-                                            <span className="action-title">Курси</span>
-                                            <span className="action-desc">Управління дисциплінами</span>
-                                        </div>
-                                    </a>
-                                </div>
-                            </div>
+
                             <div className="card">
                                 <div className="card-header">
                                     <h2>Системна інформація</h2>
