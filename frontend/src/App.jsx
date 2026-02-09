@@ -12,6 +12,7 @@ import Register from './pages/Register'
 import './App.css'
 
 import AdminSchedule from './pages/AdminSchedule'
+import AdminGroups from './pages/AdminGroups'
 
 // Компонент для захищених маршрутів
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -70,6 +71,11 @@ function App() {
                                     <Route path="/admin/schedule" element={
                                         <ProtectedRoute adminOnly>
                                             <AdminSchedule />
+                                        </ProtectedRoute>
+                                    } />
+                                    <Route path="/admin/groups" element={
+                                        <ProtectedRoute adminOnly>
+                                            <AdminGroups />
                                         </ProtectedRoute>
                                     } />
                                     <Route path="*" element={<Navigate to="/" replace />} />

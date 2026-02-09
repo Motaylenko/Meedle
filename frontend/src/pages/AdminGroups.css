@@ -1,0 +1,278 @@
+.admin-groups-page {
+    animation: fadeIn var(--transition-base) ease-out;
+}
+
+.groups-management-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: var(--spacing-xl);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    min-height: 600px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+/* Sidebar */
+.groups-sidebar {
+    border-right: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-header h3 {
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-lg);
+}
+
+.sidebar-search {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-primary);
+    font-size: var(--font-size-sm);
+}
+
+.groups-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+}
+
+.group-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-xs);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.group-item-card:hover {
+    background: var(--color-bg-tertiary);
+}
+
+.group-item-card.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.group-item-card.active .delete-icon-btn {
+    color: white;
+}
+
+.group-name {
+    font-weight: 600;
+}
+
+.delete-icon-btn {
+    opacity: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-size-lg);
+    transition: opacity var(--transition-base);
+}
+
+.group-item-card:hover .delete-icon-btn {
+    opacity: 1;
+}
+
+/* Main Area */
+.management-main {
+    padding: var(--spacing-xl);
+    background: var(--color-bg-primary);
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.title-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.goto-schedule-btn {
+    align-self: flex-start;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.goto-schedule-btn:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+
+.student-search input {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+    width: 250px;
+    background: var(--color-bg-secondary);
+}
+
+.students-tables-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+}
+
+.students-section h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.students-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.student-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: transform var(--transition-fast);
+}
+
+.student-row:hover {
+    transform: translateX(4px);
+    border-color: var(--color-primary);
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-info .name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.student-info .email {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+}
+
+.add-btn,
+.remove-btn {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.add-btn {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+}
+
+.add-btn:hover {
+    background: var(--color-primary-dark);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.remove-btn {
+    background: none;
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+}
+
+.remove-btn:hover {
+    background: var(--color-error);
+    color: white;
+}
+
+/* Empty States */
+.empty-selection {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-tertiary);
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.5;
+}
+
+.empty-text {
+    text-align: center;
+    color: var(--color-text-tertiary);
+    font-style: italic;
+    padding: var(--spacing-lg);
+}
+
+/* Modal and Buttons */
+.add-group-btn {
+    padding: var(--spacing-sm) var(--spacing-xl);
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.add-group-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 1024px) {
+    .groups-management-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .groups-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+        max-height: 250px;
+    }
+
+    .students-tables-container {
+        grid-template-columns: 1fr;
+    }
+}

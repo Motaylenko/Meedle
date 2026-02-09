@@ -838,6 +838,29 @@ app.get('/api/dashboard/stats', authenticate, async (req, res) => {
     }
 });
 
+// Get admin dashboard stats
+app.get('/api/admin/dashboard/stats', authenticate, isAdmin, async (req, res) => {
+    try {
+        const [studentCount, teacherCount, groupCount, courseCount] = await Promise.all([
+            prisma.user.count({ where: { role: 'STUDENT' } }),
+            prisma.user.count({ where: { role: 'TEACHER' } }),
+            prisma.group.count(),
+            prisma.course.count()
+        ]);
+
+        res.json({
+            studentCount,
+            teacherCount,
+            groupCount,
+            courseCount
+        });
+    } catch (error) {
+        console.error('Error fetching admin dashboard stats:', error);
+        res.status(500).json({ error: 'Failed to fetch admin dashboard stats' });
+    }
+});
+
+
 // ==================== ADMIN ENDPOINTS ====================
 
 // Middleware for admin check
@@ -952,6 +975,53 @@ app.get('/api/admin/groups/:id/courses', authenticate, isAdmin, async (req, res)
         res.json(courses);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch group courses' });
+    }
+});
+
+// Get students for a specific group
+app.get('/api/admin/groups/:id/students', authenticate, isAdmin, async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.id);
+        const group = await prisma.group.findUnique({ where: { id: groupId } });
+        if (!group) return res.status(404).json({ error: 'Group not found' });
+
+        const students = await prisma.user.findMany({
+            where: {
+                role: 'STUDENT',
+                group: group.name
+            },
+            select: { id: true, fullName: true, email: true, login: true, group: true }
+        });
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch group students' });
+    }
+});
+
+// Add/Remove students from a group
+app.post('/api/admin/groups/:id/students', authenticate, isAdmin, async (req, res) => {
+    try {
+        const groupId = parseInt(req.params.id);
+        const { studentIds, action } = req.body; // action: 'add' or 'remove'
+
+        const group = await prisma.group.findUnique({ where: { id: groupId } });
+        if (!group) return res.status(404).json({ error: 'Group not found' });
+
+        if (action === 'add') {
+            await prisma.user.updateMany({
+                where: { id: { in: studentIds } },
+                data: { group: group.name }
+            });
+        } else {
+            await prisma.user.updateMany({
+                where: { id: { in: studentIds } },
+                data: { group: null }
+            });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update group students' });
     }
 });
 

@@ -31,7 +31,7 @@ function AdminSchedule() {
         date: ''
     })
 
-    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота', 'Неділя']
+    const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота']
 
     useEffect(() => {
         loadGroups()
@@ -223,9 +223,6 @@ function AdminSchedule() {
                                 <button className="add-lesson-btn secondary" onClick={() => setIsBellModalOpen(true)}>
                                     🔔 Розклад дзвінків
                                 </button>
-                                <button className="add-lesson-btn" onClick={() => setIsGroupModalOpen(true)}>
-                                    + Додати групу
-                                </button>
                             </div>
                         </div>
 
@@ -311,33 +308,7 @@ function AdminSchedule() {
                 )}
             </div>
 
-            {/* Group Modal */}
-            {isGroupModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h2>Додати нову групу</h2>
-                            <button className="close-btn" onClick={() => setIsGroupModalOpen(false)}>&times;</button>
-                        </div>
-                        <form onSubmit={handleCreateGroup}>
-                            <div className="form-group">
-                                <label>Назва групи</label>
-                                <input
-                                    type="text"
-                                    value={newGroupName}
-                                    onChange={(e) => setNewGroupName(e.target.value)}
-                                    placeholder="Наприклад: КІ-21-1"
-                                    required
-                                />
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="cancel-btn" onClick={() => setIsGroupModalOpen(false)}>Скасувати</button>
-                                <button type="submit" className="save-btn">Створити</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+
 
             {/* Lesson Modal */}
             {isLessonModalOpen && (
@@ -379,6 +350,7 @@ function AdminSchedule() {
                                 <select
                                     value={lessonForm.bellScheduleId}
                                     onChange={(e) => handleBellSelect(e.target.value)}
+                                    required
                                 >
                                     <option value="">Виберіть пару</option>
                                     {bellSchedules.map(bell => (
@@ -410,26 +382,7 @@ function AdminSchedule() {
                                 </div>
                             </div>
 
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Початок</label>
-                                    <input
-                                        type="time"
-                                        value={lessonForm.time}
-                                        onChange={(e) => setLessonForm({ ...lessonForm, time: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Кінець</label>
-                                    <input
-                                        type="time"
-                                        value={lessonForm.endTime}
-                                        onChange={(e) => setLessonForm({ ...lessonForm, endTime: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                            </div>
+
 
                             <div className="form-group">
                                 <label>Аудиторія</label>

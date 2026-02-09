@@ -108,6 +108,10 @@ class ApiService {
         return this.request('/dashboard/stats');
     }
 
+    async getAdminDashboardStats() {
+        return this.request('/admin/dashboard/stats');
+    }
+
     // Notifications
     async subscribeToNotifications(subscription) {
         return this.request('/notifications/subscribe', {
@@ -158,6 +162,17 @@ class ApiService {
 
     async getGroupCourses(groupId) {
         return this.request(`/admin/groups/${groupId}/courses`);
+    }
+
+    async getGroupStudents(groupId) {
+        return this.request(`/admin/groups/${groupId}/students`);
+    }
+
+    async updateGroupStudents(groupId, studentIds, action) {
+        return this.request(`/admin/groups/${groupId}/students`, {
+            method: 'POST',
+            body: JSON.stringify({ studentIds, action }),
+        });
     }
 
     async saveSchedule(groupId, scheduleData) {
