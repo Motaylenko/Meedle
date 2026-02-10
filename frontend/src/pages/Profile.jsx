@@ -171,25 +171,6 @@ function Profile() {
                     </div>
 
                     <div className="settings-section">
-                        <div className="settings-card">
-                            <h3>🎨 Тема інтерфейсу</h3>
-                            <div className="theme-options">
-                                <button
-                                    className={`theme-option ${theme === 'light' ? 'active' : ''}`}
-                                    onClick={() => handleThemeChange('light')}
-                                >
-                                    <span className="theme-icon">☀️</span>
-                                    <span>Світла</span>
-                                </button>
-                                <button
-                                    className={`theme-option ${theme === 'dark' ? 'active' : ''}`}
-                                    onClick={() => handleThemeChange('dark')}
-                                >
-                                    <span className="theme-icon">🌙</span>
-                                    <span>Темна</span>
-                                </button>
-                            </div>
-                        </div>
 
                         <div className="settings-card">
                             <h3>🔔 Сповіщення</h3>
