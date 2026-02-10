@@ -137,11 +137,11 @@ function Dashboard() {
                                 </div>
                             </div>
 
-                            <div className="stat-card highlight">
+                            <div className="stat-card">
                                 <div className="stat-icon">🏢</div>
                                 <div className="stat-content">
                                     <div className="stat-value">{stats.groupCount}</div>
-                                    <div className="stat-label">Груп</div>
+                                    <div className="stat-label">Групи</div>
                                 </div>
                             </div>
 
