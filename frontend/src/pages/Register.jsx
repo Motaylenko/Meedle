@@ -113,7 +113,7 @@ const Register = () => {
 
                     <div className={styles.inputGroup}>
                         <label>Логін</label>
-                        <input name="login" placeholder="ivan_s" value={formData.login} onChange={handleChange} required />
+                        <input name="login" placeholder="Ivanovii" value={formData.login} onChange={handleChange} required />
                     </div>
 
                     <div className={styles.inputGroup}>
