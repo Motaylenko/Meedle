@@ -160,13 +160,13 @@ function Courses() {
                             className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                             onClick={() => setViewMode('grid')}
                         >
-                            🗂 Картка
+                            Картка
                         </button>
                         <button
                             className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                             onClick={() => setViewMode('list')}
                         >
-                            📝 Список
+                            Список
                         </button>
                     </div>
                 </div>
@@ -245,10 +245,7 @@ function Courses() {
                         ))
                     ) : (
                         <div className="empty-state">
-                            <p>📭 Жодного курсу не знайдено за вашим запитом</p>
-                            <button className="clear-search-btn" onClick={() => { setSearchQuery(''); setFilterStatus('all'); }}>
-                                Очистити пошук
-                            </button>
+                            <p>Жодного курсу не знайдено за вашим запитом</p>
                         </div>
                     )}
                 </div>
