@@ -112,36 +112,25 @@
 /* Search Group Container */
 .group-search-container {
     position: relative;
+    width: 100%;
 }
 
-.group-action-btn {
-    width: 100%;
-    padding: var(--spacing-md);
+.group-search-input {
+    height: 48px;
+    /* Explicit height to match dropdown */
+    padding-left: 44px !important;
+    /* Fixed padding for icon */
+    box-sizing: border-box;
+}
+
+.group-search-container .search-icon {
+    left: 14px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    background: var(--color-bg-secondary);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-base);
-    cursor: pointer;
-    transition: all var(--transition-base);
+    height: 100%;
 }
 
-.group-action-btn:hover {
-    border-color: var(--color-primary);
-    background: var(--color-bg-primary);
-}
 
-.group-action-btn .btn-icon {
-    font-size: var(--font-size-lg);
-}
-
-.group-action-btn .btn-text {
-    font-weight: 500;
-}
 
 /* Search dropdown overlay */
 .group-search-dropdown {
@@ -153,15 +142,14 @@
     border: 2px solid var(--color-primary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
-    padding: var(--spacing-md);
     z-index: 100;
+    overflow: hidden;
 }
 
 /* Group results list */
 .group-results {
     max-height: 300px;
     overflow-y: auto;
-    margin-top: var(--spacing-sm);
 }
 
 .no-results {
@@ -181,7 +169,9 @@
 
 .group-select-dropdown {
     width: 100%;
-    padding: var(--spacing-md);
+    height: 48px;
+    /* Explicit height to match search input */
+    padding: 0 var(--spacing-md);
     font-size: var(--font-size-base);
     border: 2px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -190,10 +180,10 @@
     cursor: pointer;
     transition: all var(--transition-base);
     appearance: none;
+    box-sizing: border-box;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right var(--spacing-md) center;
-    padding-right: calc(var(--spacing-xl) + var(--spacing-md));
 }
 
 .group-select-dropdown:hover {
