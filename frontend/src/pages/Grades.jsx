@@ -144,6 +144,79 @@ function Grades() {
         }
     }
 
+    // Regular user rank calculation
+    const currentUser = leaderboard.find(u => u.isCurrentUser)
+    const currentUserGlobalRank = currentUser?.rank || '?'
+    const userGroup = currentUser?.group || 'Без групи'
+
+    // Calculate group rank for the current user
+    const groupUsersSorted = leaderboard
+        .filter(u => u.group === userGroup)
+        .sort((a, b) => b.points - a.points)
+    const currentUserGroupRank = userGroup !== 'Без групи'
+        ? groupUsersSorted.findIndex(u => u.isCurrentUser) + 1
+        : '?'
+
+    // Shared Search Header
+    const renderSearchHeader = (title, subtitle) => (
+        <>
+            <div className="page-header">
+                <h1>{title}</h1>
+                <p>{subtitle}</p>
+            </div>
+
+            <div className="global-search">
+                <div className="search-input-wrapper">
+                    <span className="search-icon">🔍</span>
+                    <input
+                        type="text"
+                        placeholder="Пошук студента..."
+                        value={studentSearch}
+                        onChange={(e) => setStudentSearch(e.target.value)}
+                        className="search-input"
+                    />
+                    {studentSearch && (
+                        <button
+                            className="clear-search"
+                            onClick={() => setStudentSearch('')}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+            </div>
+        </>
+    )
+
+    // Shared Leaderboard Card content
+    const renderLeaderboardList = (list, isOverall = false) => (
+        <div className="leaderboard-list">
+            {list.length > 0 ? (
+                list.slice(0, studentSearch ? undefined : 10).map((user, index) => (
+                    <div
+                        key={index}
+                        className={`leaderboard-item ${user.isCurrentUser ? 'current-user' : ''} ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
+                    >
+                        <div className="rank-badge">#{isOverall ? user.rank : index + 1}</div>
+                        <div className="user-info">
+                            <div className="user-name">{user.name} {user.isCurrentUser && '(Ви)'}</div>
+                            <div className="user-points">{user.points} балів {isOverall && `• ${user.group || 'Без групи'}`}</div>
+                        </div>
+                        {(isOverall ? user.rank : index + 1) <= 3 && !studentSearch && (
+                            <div className="trophy">
+                                {(isOverall ? user.rank : index + 1) === 1 ? '🥇' : (isOverall ? user.rank : index + 1) === 2 ? '🥈' : '🥉'}
+                            </div>
+                        )}
+                    </div>
+                ))
+            ) : (
+                <div className="empty-state">
+                    <p>Студентів не знайдено</p>
+                </div>
+            )}
+        </div>
+    )
+
     if (loading) {
         return (
             <div className="grades-page">
@@ -158,36 +231,10 @@ function Grades() {
     }
 
     if (isAdmin) {
-        // Admin view - two leaderboards: overall and by group
         return (
             <div className="grades-page">
                 <div className="container">
-                    <div className="page-header">
-                        <h1>🏆 Рейтинг студентів</h1>
-                        <p>Загальний рейтинг та рейтинг по групам</p>
-                    </div>
-
-                    {/* Global Student Search */}
-                    <div className="global-search">
-                        <div className="search-input-wrapper">
-                            <span className="search-icon">🔍</span>
-                            <input
-                                type="text"
-                                placeholder="Пошук студента..."
-                                value={studentSearch}
-                                onChange={(e) => setStudentSearch(e.target.value)}
-                                className="search-input"
-                            />
-                            {studentSearch && (
-                                <button
-                                    className="clear-search"
-                                    onClick={() => setStudentSearch('')}
-                                >
-                                    ✕
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                    {renderSearchHeader("🏆 Рейтинг студентів", "Загальний рейтинг та рейтинг по групам")}
 
                     <div className="leaderboard-sections">
                         {/* Overall Leaderboard */}
@@ -196,31 +243,7 @@ function Grades() {
                                 <h2>📊 Загальний рейтинг</h2>
                                 <p>Топ студентів всіх груп</p>
                             </div>
-                            <div className="leaderboard-list">
-                                {filteredLeaderboard.length > 0 ? (
-                                    filteredLeaderboard.slice(0, studentSearch ? undefined : 10).map((user, index) => (
-                                        <div
-                                            key={index}
-                                            className={`leaderboard-item ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
-                                        >
-                                            <div className="rank-badge">#{user.rank}</div>
-                                            <div className="user-info">
-                                                <div className="user-name">{user.name}</div>
-                                                <div className="user-points">{user.points} балів • {user.group || 'Без групи'}</div>
-                                            </div>
-                                            {user.rank <= 3 && !studentSearch && (
-                                                <div className="trophy">
-                                                    {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="empty-state">
-                                        <p>Студентів не знайдено</p>
-                                    </div>
-                                )}
-                            </div>
+                            {renderLeaderboardList(filteredLeaderboard, true)}
                         </div>
 
                         {/* Group-based Leaderboard */}
@@ -311,29 +334,7 @@ function Grades() {
                                     <div className="empty-state">
                                         <p>Оберіть групу для перегляду рейтингу</p>
                                     </div>
-                                ) : filteredGroupLeaderboard.length > 0 ? (
-                                    filteredGroupLeaderboard.map((user, index) => (
-                                        <div
-                                            key={index}
-                                            className={`leaderboard-item ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
-                                        >
-                                            <div className="rank-badge">#{index + 1}</div>
-                                            <div className="user-info">
-                                                <div className="user-name">{user.name}</div>
-                                                <div className="user-points">{user.points} балів</div>
-                                            </div>
-                                            {index < 3 && !studentSearch && (
-                                                <div className="trophy">
-                                                    {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))
-                                ) : selectedGroup !== 'all' ? (
-                                    <div className="empty-state">
-                                        <p>{studentSearch ? 'Студентів не знайдено' : 'Немає студентів у цій групі'}</p>
-                                    </div>
-                                ) : null}
+                                ) : renderLeaderboardList(filteredGroupLeaderboard)}
                             </div>
                         </div>
                     </div>
@@ -342,81 +343,94 @@ function Grades() {
         )
     }
 
-    // Regular user view - grades and leaderboard
+
+    // Student View
     return (
         <div className="grades-page">
             <div className="container">
-                <div className="page-header">
-                    <h1>📊 Оцінки та Рейтинг</h1>
-                    <p>Ваша успішність та позиція в рейтингу</p>
-                </div>
+                {renderSearchHeader("🏆 Рейтинг та Успішність", "Ваші досягнення та місце у спільноті")}
 
-                <div className="grades-overview">
-                    <div className="overview-card">
-                        <div className="overview-icon">📈</div>
-                        <div className="overview-content">
-                            <div className="overview-value">{averageGrade}</div>
-                            <div className="overview-label">Середній бал</div>
-                        </div>
+                {/* Personal Rank Row */}
+                <div className="personal-rank-bar">
+                    <div className="rank-item global">
+                        <span className="label">🌍 Місце у загальному рейтингу:</span>
+                        <span className="value">#{currentUserGlobalRank}</span>
                     </div>
-
-                    <div className="overview-card highlight">
-                        <div className="overview-icon">🏆</div>
-                        <div className="overview-content">
-                            <div className="overview-value">1247</div>
-                            <div className="overview-label">Рейтинг</div>
-                        </div>
-                    </div>
-
-                    <div className="overview-card">
-                        <div className="overview-icon">📍</div>
-                        <div className="overview-content">
-                            <div className="overview-value">#12</div>
-                            <div className="overview-label">Позиція</div>
-                        </div>
+                    <div className="rank-divider"></div>
+                    <div className="rank-item group">
+                        <span className="label">👥 Місце у рейтингу групи ({userGroup}):</span>
+                        <span className="value">#{currentUserGroupRank}</span>
                     </div>
                 </div>
 
-                <div className="content-layout">
-                    <div className="grades-section">
-                        <h2>Оцінки по курсам</h2>
-                        <div className="grades-list">
+                <div className="leaderboard-sections">
+                    {/* Global List */}
+                    <div className="leaderboard-section-card">
+                        <div className="section-header">
+                            <h2>📊 Загальний рейтинг</h2>
+                            <p>Топ студентів університету</p>
+                        </div>
+                        {renderLeaderboardList(filteredLeaderboard, true)}
+                    </div>
+
+                    {/* Group/Others List */}
+                    <div className="leaderboard-section-card">
+                        <div className="section-header">
+                            <h2>👥 Рейтинг груп</h2>
+                            <p>Перегляд успішності за групами</p>
+                        </div>
+                        <div className="group-selector">
+                            <div className="group-selector-buttons" style={{ display: 'grid', gridTemplateColumns: '1fr', width: '100%' }}>
+                                <div className="group-select-container">
+                                    <select
+                                        value={selectedGroup}
+                                        onChange={(e) => setSelectedGroup(e.target.value)}
+                                        className="group-select-dropdown"
+                                    >
+                                        <option value="all">Переглянути групу</option>
+                                        {groups.map((group) => (
+                                            <option key={group.id} value={group.name}>{group.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            {selectedGroup !== 'all' && (
+                                <div className="selected-group">
+                                    <span>Група: <strong>{selectedGroup}</strong></span>
+                                    <button className="clear-group" onClick={() => setSelectedGroup('all')}>Скинути</button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="leaderboard-list">
+                            {selectedGroup === 'all' ? (
+                                <div className="empty-state">
+                                    <p>Виберіть групу, щоб побачити лідерів</p>
+                                </div>
+                            ) : renderLeaderboardList(filteredGroupLeaderboard)}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Student Grades section */}
+                <div className="student-grades-section">
+                    <div className="leaderboard-section-card" style={{ maxWidth: 'none' }}>
+                        <div className="section-header">
+                            <h2>📝 Мої оцінки по курсам</h2>
+                            <p>Ваш поточний прогрес у навчанні</p>
+                        </div>
+                        <div className="student-grades-list">
                             {grades.map((item, index) => (
-                                <div key={index} className="grade-item">
-                                    <div className="grade-course">{item.course}</div>
-                                    <div className="grade-bar-container">
-                                        <div className="grade-bar">
+                                <div key={index} className="student-grade-card">
+                                    <div className="student-grade-course">{item.course}</div>
+                                    <div className="student-grade-bar-wrapper">
+                                        <div className="student-grade-bar">
                                             <div
-                                                className="grade-fill"
+                                                className="student-grade-fill"
                                                 style={{ width: `${(item.grade / item.max) * 100}%`, background: item.color }}
                                             ></div>
                                         </div>
-                                        <div className="grade-value">{item.grade}/{item.max}</div>
+                                        <div className="student-grade-val">{item.grade}/{item.max}</div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="leaderboard-section">
-                        <h2>Таблиця лідерів</h2>
-                        <div className="leaderboard-list">
-                            {leaderboard.map((user, index) => (
-                                <div
-                                    key={index}
-                                    className={`leaderboard-item ${user.isCurrentUser ? 'current-user' : ''}`}
-                                >
-                                    <div className="rank-badge">#{user.rank}</div>
-                                    <div className="user-avatar">{user.avatar}</div>
-                                    <div className="user-info">
-                                        <div className="user-name">{user.name}</div>
-                                        <div className="user-points">{user.points} балів</div>
-                                    </div>
-                                    {user.rank <= 3 && (
-                                        <div className="trophy">
-                                            {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                         </div>
