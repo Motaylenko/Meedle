@@ -204,7 +204,6 @@ function Grades() {
                                             className={`leaderboard-item ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
                                         >
                                             <div className="rank-badge">#{user.rank}</div>
-                                            <div className="user-avatar">{user.avatar}</div>
                                             <div className="user-info">
                                                 <div className="user-name">{user.name}</div>
                                                 <div className="user-points">{user.points} балів • {user.group || 'Без групи'}</div>
@@ -264,7 +263,6 @@ function Grades() {
                                                                 className="group-dropdown-item"
                                                                 onClick={() => handleGroupSelect(group.name)}
                                                             >
-                                                                <span className="group-icon">👥</span>
                                                                 <span className="group-name">{group.name}</span>
                                                             </div>
                                                         ))
@@ -320,7 +318,6 @@ function Grades() {
                                             className={`leaderboard-item ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
                                         >
                                             <div className="rank-badge">#{index + 1}</div>
-                                            <div className="user-avatar">{user.avatar}</div>
                                             <div className="user-info">
                                                 <div className="user-name">{user.name}</div>
                                                 <div className="user-points">{user.points} балів</div>
