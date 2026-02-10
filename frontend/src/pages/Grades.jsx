@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
 import './Grades.css'
+import './GradesAdmin.css'
 
 function Grades() {
     const [grades, setGrades] = useState([])
@@ -9,12 +10,40 @@ function Grades() {
     const [loading, setLoading] = useState(true)
     const [isAdmin, setIsAdmin] = useState(false)
 
+    // Admin-specific state
+    const [groups, setGroups] = useState([])
+    const [selectedGroup, setSelectedGroup] = useState('all')
+    const [groupLeaderboard, setGroupLeaderboard] = useState([])
+
     useEffect(() => {
         // Check if user is admin
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         setIsAdmin(user.role === 'ADMIN')
         loadGradesData()
     }, [])
+
+    // Load groups for admin
+    useEffect(() => {
+        if (isAdmin) {
+            const loadGroups = async () => {
+                try {
+                    const groupsData = await api.getGroups()
+                    setGroups(groupsData)
+                } catch (err) {
+                    console.error('Failed to load groups:', err)
+                }
+            }
+            loadGroups()
+        }
+    }, [isAdmin])
+
+    // Filter leaderboard by selected group
+    useEffect(() => {
+        if (selectedGroup !== 'all') {
+            const filtered = leaderboard.filter(user => user.group === selectedGroup)
+            setGroupLeaderboard(filtered)
+        }
+    }, [selectedGroup, leaderboard])
 
     const loadGradesData = async () => {
         try {
@@ -74,35 +103,96 @@ function Grades() {
     }
 
     if (isAdmin) {
-        // Admin view - only leaderboard
+        // Admin view - two leaderboards: overall and by group
         return (
             <div className="grades-page">
                 <div className="container">
                     <div className="page-header">
                         <h1>🏆 Рейтинг студентів</h1>
-                        <p>Таблиця лідерів за балами</p>
+                        <p>Загальний рейтинг та рейтинг по групам</p>
                     </div>
 
-                    <div className="leaderboard-full">
-                        <div className="leaderboard-list">
-                            {leaderboard.map((user, index) => (
-                                <div
-                                    key={index}
-                                    className="leaderboard-item"
-                                >
-                                    <div className="rank-badge">#{user.rank}</div>
-                                    <div className="user-avatar">{user.avatar}</div>
-                                    <div className="user-info">
-                                        <div className="user-name">{user.name}</div>
-                                        <div className="user-points">{user.points} балів</div>
-                                    </div>
-                                    {user.rank <= 3 && (
-                                        <div className="trophy">
-                                            {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                    <div className="leaderboard-sections">
+                        {/* Overall Leaderboard */}
+                        <div className="leaderboard-section-card">
+                            <div className="section-header">
+                                <h2>📊 Загальний рейтинг</h2>
+                                <p>Топ студентів всіх груп</p>
+                            </div>
+                            <div className="leaderboard-list">
+                                {leaderboard.slice(0, 10).map((user, index) => (
+                                    <div
+                                        key={index}
+                                        className="leaderboard-item"
+                                    >
+                                        <div className="rank-badge">#{user.rank}</div>
+                                        <div className="user-avatar">{user.avatar}</div>
+                                        <div className="user-info">
+                                            <div className="user-name">{user.name}</div>
+                                            <div className="user-points">{user.points} балів</div>
                                         </div>
-                                    )}
-                                </div>
-                            ))}
+                                        {user.rank <= 3 && (
+                                            <div className="trophy">
+                                                {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Group-based Leaderboard */}
+                        <div className="leaderboard-section-card">
+                            <div className="section-header">
+                                <h2>👥 Рейтинг по групах</h2>
+                                <p>Виберіть групу для перегляду</p>
+                            </div>
+
+                            <div className="group-selector">
+                                <select
+                                    value={selectedGroup}
+                                    onChange={(e) => setSelectedGroup(e.target.value)}
+                                    className="group-select"
+                                >
+                                    <option value="all">Оберіть групу</option>
+                                    {groups.map((group) => (
+                                        <option key={group.id} value={group.name}>
+                                            {group.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="leaderboard-list">
+                                {selectedGroup === 'all' ? (
+                                    <div className="empty-state">
+                                        <p>Оберіть групу для перегляду рейтингу</p>
+                                    </div>
+                                ) : groupLeaderboard.length > 0 ? (
+                                    groupLeaderboard.map((user, index) => (
+                                        <div
+                                            key={index}
+                                            className="leaderboard-item"
+                                        >
+                                            <div className="rank-badge">#{index + 1}</div>
+                                            <div className="user-avatar">{user.avatar}</div>
+                                            <div className="user-info">
+                                                <div className="user-name">{user.name}</div>
+                                                <div className="user-points">{user.points} балів</div>
+                                            </div>
+                                            {index < 3 && (
+                                                <div className="trophy">
+                                                    {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <p>Немає студентів у цій групі</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
