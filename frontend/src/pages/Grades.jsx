@@ -14,6 +14,11 @@ function Grades() {
     const [groups, setGroups] = useState([])
     const [selectedGroup, setSelectedGroup] = useState('all')
     const [groupLeaderboard, setGroupLeaderboard] = useState([])
+    const [studentSearch, setStudentSearch] = useState('')
+    const [groupSearch, setGroupSearch] = useState('')
+    const [filteredLeaderboard, setFilteredLeaderboard] = useState([])
+    const [filteredGroupLeaderboard, setFilteredGroupLeaderboard] = useState([])
+    const [filteredGroups, setFilteredGroups] = useState([])
 
     useEffect(() => {
         // Check if user is admin
@@ -29,6 +34,7 @@ function Grades() {
                 try {
                     const groupsData = await api.getGroups()
                     setGroups(groupsData)
+                    setFilteredGroups(groupsData)
                 } catch (err) {
                     console.error('Failed to load groups:', err)
                 }
@@ -42,8 +48,53 @@ function Grades() {
         if (selectedGroup !== 'all') {
             const filtered = leaderboard.filter(user => user.group === selectedGroup)
             setGroupLeaderboard(filtered)
+            setFilteredGroupLeaderboard(filtered)
+        } else {
+            setGroupLeaderboard([])
+            setFilteredGroupLeaderboard([])
         }
     }, [selectedGroup, leaderboard])
+
+    // Filter overall leaderboard by student search
+    useEffect(() => {
+        if (studentSearch.trim()) {
+            const filtered = leaderboard.filter(user =>
+                user.name.toLowerCase().includes(studentSearch.toLowerCase())
+            )
+            setFilteredLeaderboard(filtered)
+        } else {
+            setFilteredLeaderboard(leaderboard)
+        }
+    }, [studentSearch, leaderboard])
+
+    // Filter group leaderboard by student search
+    useEffect(() => {
+        if (studentSearch.trim() && selectedGroup !== 'all') {
+            const filtered = groupLeaderboard.filter(user =>
+                user.name.toLowerCase().includes(studentSearch.toLowerCase())
+            )
+            setFilteredGroupLeaderboard(filtered)
+        } else {
+            setFilteredGroupLeaderboard(groupLeaderboard)
+        }
+    }, [studentSearch, groupLeaderboard, selectedGroup])
+
+    // Filter groups by search
+    useEffect(() => {
+        if (groupSearch.trim()) {
+            const filtered = groups.filter(group =>
+                group.name.toLowerCase().includes(groupSearch.toLowerCase())
+            )
+            setFilteredGroups(filtered)
+        } else {
+            setFilteredGroups(groups)
+        }
+    }, [groupSearch, groups])
+
+    const handleGroupSelect = (groupName) => {
+        setSelectedGroup(groupName)
+        setGroupSearch('')
+    }
 
     const loadGradesData = async () => {
         try {
@@ -55,6 +106,7 @@ function Grades() {
                 // For admin, only load leaderboard
                 const leaderboardData = await api.getLeaderboard()
                 setLeaderboard(leaderboardData)
+                setFilteredLeaderboard(leaderboardData)
             } else {
                 // For regular users, load both grades and leaderboard
                 const [gradesData, leaderboardData] = await Promise.all([
@@ -65,6 +117,7 @@ function Grades() {
                 setGrades(gradesData.grades)
                 setAverageGrade(gradesData.average)
                 setLeaderboard(leaderboardData)
+                setFilteredLeaderboard(leaderboardData)
             }
         } catch (err) {
             console.error('Failed to load grades data:', err)
@@ -78,12 +131,14 @@ function Grades() {
                 ])
                 setAverageGrade(90.0)
             }
-            setLeaderboard([
-                { rank: 1, name: 'Олександр Коваленко', points: 1450, avatar: '👨' },
-                { rank: 2, name: 'Марія Петренко', points: 1380, avatar: '👩' },
-                { rank: 3, name: 'Іван Сидоренко', points: 1320, avatar: '👨' },
-                { rank: 12, name: 'Ви', points: 1247, avatar: '🎓', isCurrentUser: true }
-            ])
+            const fallbackLeaderboard = [
+                { rank: 1, name: 'Олександр Коваленко', points: 1450, avatar: '👨', group: 'КІ-21-1' },
+                { rank: 2, name: 'Марія Петренко', points: 1380, avatar: '👩', group: 'КІ-21-2' },
+                { rank: 3, name: 'Іван Сидоренко', points: 1320, avatar: '👨', group: 'КІ-21-1' },
+                { rank: 12, name: 'Ви', points: 1247, avatar: '🎓', isCurrentUser: true, group: 'КІ-21-3' }
+            ]
+            setLeaderboard(fallbackLeaderboard)
+            setFilteredLeaderboard(fallbackLeaderboard)
         } finally {
             setLoading(false)
         }
@@ -112,6 +167,28 @@ function Grades() {
                         <p>Загальний рейтинг та рейтинг по групам</p>
                     </div>
 
+                    {/* Global Student Search */}
+                    <div className="global-search">
+                        <div className="search-input-wrapper">
+                            <span className="search-icon">🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Пошук студента..."
+                                value={studentSearch}
+                                onChange={(e) => setStudentSearch(e.target.value)}
+                                className="search-input"
+                            />
+                            {studentSearch && (
+                                <button
+                                    className="clear-search"
+                                    onClick={() => setStudentSearch('')}
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="leaderboard-sections">
                         {/* Overall Leaderboard */}
                         <div className="leaderboard-section-card">
@@ -120,24 +197,30 @@ function Grades() {
                                 <p>Топ студентів всіх груп</p>
                             </div>
                             <div className="leaderboard-list">
-                                {leaderboard.slice(0, 10).map((user, index) => (
-                                    <div
-                                        key={index}
-                                        className="leaderboard-item"
-                                    >
-                                        <div className="rank-badge">#{user.rank}</div>
-                                        <div className="user-avatar">{user.avatar}</div>
-                                        <div className="user-info">
-                                            <div className="user-name">{user.name}</div>
-                                            <div className="user-points">{user.points} балів</div>
-                                        </div>
-                                        {user.rank <= 3 && (
-                                            <div className="trophy">
-                                                {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                                {filteredLeaderboard.length > 0 ? (
+                                    filteredLeaderboard.slice(0, studentSearch ? undefined : 10).map((user, index) => (
+                                        <div
+                                            key={index}
+                                            className={`leaderboard-item ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
+                                        >
+                                            <div className="rank-badge">#{user.rank}</div>
+                                            <div className="user-avatar">{user.avatar}</div>
+                                            <div className="user-info">
+                                                <div className="user-name">{user.name}</div>
+                                                <div className="user-points">{user.points} балів • {user.group || 'Без групи'}</div>
                                             </div>
-                                        )}
+                                            {user.rank <= 3 && !studentSearch && (
+                                                <div className="trophy">
+                                                    {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <p>Студентів не знайдено</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </div>
 
@@ -149,30 +232,63 @@ function Grades() {
                             </div>
 
                             <div className="group-selector">
-                                <select
-                                    value={selectedGroup}
-                                    onChange={(e) => setSelectedGroup(e.target.value)}
-                                    className="group-select"
-                                >
-                                    <option value="all">Оберіть групу</option>
-                                    {groups.map((group) => (
-                                        <option key={group.id} value={group.name}>
-                                            {group.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="search-input-wrapper">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Пошук групи..."
+                                        value={groupSearch}
+                                        onChange={(e) => setGroupSearch(e.target.value)}
+                                        className="search-input"
+                                    />
+                                    {groupSearch && (
+                                        <button
+                                            className="clear-search"
+                                            onClick={() => setGroupSearch('')}
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+
+                                {groupSearch && filteredGroups.length > 0 && (
+                                    <div className="group-dropdown">
+                                        {filteredGroups.map((group) => (
+                                            <div
+                                                key={group.id}
+                                                className="group-dropdown-item"
+                                                onClick={() => handleGroupSelect(group.name)}
+                                            >
+                                                <span className="group-icon">👥</span>
+                                                <span className="group-name">{group.name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {!groupSearch && selectedGroup !== 'all' && (
+                                    <div className="selected-group">
+                                        <span>Обрана група: <strong>{selectedGroup}</strong></span>
+                                        <button
+                                            className="clear-group"
+                                            onClick={() => setSelectedGroup('all')}
+                                        >
+                                            Скинути
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="leaderboard-list">
-                                {selectedGroup === 'all' ? (
+                                {selectedGroup === 'all' && !groupSearch ? (
                                     <div className="empty-state">
                                         <p>Оберіть групу для перегляду рейтингу</p>
                                     </div>
-                                ) : groupLeaderboard.length > 0 ? (
-                                    groupLeaderboard.map((user, index) => (
+                                ) : filteredGroupLeaderboard.length > 0 ? (
+                                    filteredGroupLeaderboard.map((user, index) => (
                                         <div
                                             key={index}
-                                            className="leaderboard-item"
+                                            className={`leaderboard-item ${studentSearch && user.name.toLowerCase().includes(studentSearch.toLowerCase()) ? 'highlighted' : ''}`}
                                         >
                                             <div className="rank-badge">#{index + 1}</div>
                                             <div className="user-avatar">{user.avatar}</div>
@@ -180,18 +296,18 @@ function Grades() {
                                                 <div className="user-name">{user.name}</div>
                                                 <div className="user-points">{user.points} балів</div>
                                             </div>
-                                            {index < 3 && (
+                                            {index < 3 && !studentSearch && (
                                                 <div className="trophy">
                                                     {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
                                                 </div>
                                             )}
                                         </div>
                                     ))
-                                ) : (
+                                ) : selectedGroup !== 'all' ? (
                                     <div className="empty-state">
-                                        <p>Немає студентів у цій групі</p>
+                                        <p>{studentSearch ? 'Студентів не знайдено' : 'Немає студентів у цій групі'}</p>
                                     </div>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     </div>
