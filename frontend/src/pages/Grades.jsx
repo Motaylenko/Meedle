@@ -157,35 +157,36 @@ function Grades() {
         ? groupUsersSorted.findIndex(u => u.isCurrentUser) + 1
         : '?'
 
-    // Shared Search Header
-    const renderSearchHeader = (title, subtitle) => (
-        <>
-            <div className="page-header">
-                <h1>{title}</h1>
-                <p>{subtitle}</p>
-            </div>
+    // Shared Page Header
+    const renderPageHeader = (title, subtitle) => (
+        <div className="page-header">
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
+        </div>
+    )
 
-            <div className="global-search">
-                <div className="search-input-wrapper">
-                    <span className="search-icon">🔍</span>
-                    <input
-                        type="text"
-                        placeholder="Пошук студента..."
-                        value={studentSearch}
-                        onChange={(e) => setStudentSearch(e.target.value)}
-                        className="search-input"
-                    />
-                    {studentSearch && (
-                        <button
-                            className="clear-search"
-                            onClick={() => setStudentSearch('')}
-                        >
-                            ✕
-                        </button>
-                    )}
-                </div>
+    // Shared Global Search
+    const renderGlobalSearch = () => (
+        <div className="global-search">
+            <div className="search-input-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                    type="text"
+                    placeholder="Пошук студента..."
+                    value={studentSearch}
+                    onChange={(e) => setStudentSearch(e.target.value)}
+                    className="search-input"
+                />
+                {studentSearch && (
+                    <button
+                        className="clear-search"
+                        onClick={() => setStudentSearch('')}
+                    >
+                        ✕
+                    </button>
+                )}
             </div>
-        </>
+        </div>
     )
 
     // Shared Leaderboard Card content
@@ -234,7 +235,8 @@ function Grades() {
         return (
             <div className="grades-page">
                 <div className="container">
-                    {renderSearchHeader("🏆 Рейтинг студентів", "Загальний рейтинг та рейтинг по групам")}
+                    {renderPageHeader("🏆 Рейтинг студентів", "Загальний рейтинг та рейтинг по групам")}
+                    {renderGlobalSearch()}
 
                     <div className="leaderboard-sections">
                         {/* Overall Leaderboard */}
@@ -348,7 +350,7 @@ function Grades() {
     return (
         <div className="grades-page">
             <div className="container">
-                {renderSearchHeader("🏆 Рейтинг та Успішність", "Ваші досягнення та місце у спільноті")}
+                {renderPageHeader("🏆 Рейтинг та Успішність", "Ваші досягнення та місце у спільноті")}
 
                 {/* Personal Rank Row */}
                 <div className="personal-rank-bar">
@@ -362,6 +364,9 @@ function Grades() {
                         <span className="value">#{currentUserGroupRank}</span>
                     </div>
                 </div>
+
+                {/* Global Search - Moved down as per request */}
+                {renderGlobalSearch()}
 
                 <div className="leaderboard-sections">
                     {/* Global List */}
@@ -379,32 +384,87 @@ function Grades() {
                             <h2>👥 Рейтинг груп</h2>
                             <p>Перегляд успішності за групами</p>
                         </div>
+
                         <div className="group-selector">
-                            <div className="group-selector-buttons" style={{ display: 'grid', gridTemplateColumns: '1fr', width: '100%' }}>
+                            <div className="group-selector-buttons">
+                                {/* Search Group Button */}
+                                <div className="group-search-container">
+                                    <div className="search-input-wrapper">
+                                        <span className="search-icon">🔍</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Пошук групи..."
+                                            value={groupSearch}
+                                            onChange={(e) => setGroupSearch(e.target.value)}
+                                            className="search-input group-search-input"
+                                        />
+                                        {groupSearch && (
+                                            <button
+                                                className="clear-search"
+                                                onClick={() => setGroupSearch('')}
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {groupSearch.trim() && (
+                                        <div className="group-search-dropdown">
+                                            <div className="group-results">
+                                                {filteredGroups.length > 0 ? (
+                                                    filteredGroups.map((group) => (
+                                                        <div
+                                                            key={group.id}
+                                                            className="group-dropdown-item"
+                                                            onClick={() => handleGroupSelect(group.name)}
+                                                        >
+                                                            <span className="group-name">{group.name}</span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="no-results">
+                                                        <p>Групи не знайдено</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Select Group Dropdown */}
                                 <div className="group-select-container">
                                     <select
                                         value={selectedGroup}
                                         onChange={(e) => setSelectedGroup(e.target.value)}
                                         className="group-select-dropdown"
                                     >
-                                        <option value="all">Переглянути групу</option>
+                                        <option value="all">Оберіть групу</option>
                                         {groups.map((group) => (
-                                            <option key={group.id} value={group.name}>{group.name}</option>
+                                            <option key={group.id} value={group.name}>
+                                                {group.name}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
                             </div>
+
                             {selectedGroup !== 'all' && (
                                 <div className="selected-group">
-                                    <span>Група: <strong>{selectedGroup}</strong></span>
-                                    <button className="clear-group" onClick={() => setSelectedGroup('all')}>Скинути</button>
+                                    <span>Обрана група: <strong>{selectedGroup}</strong></span>
+                                    <button
+                                        className="clear-group"
+                                        onClick={() => setSelectedGroup('all')}
+                                    >
+                                        Скинути
+                                    </button>
                                 </div>
                             )}
                         </div>
+
                         <div className="leaderboard-list">
-                            {selectedGroup === 'all' ? (
+                            {selectedGroup === 'all' && !groupSearch ? (
                                 <div className="empty-state">
-                                    <p>Виберіть групу, щоб побачити лідерів</p>
+                                    <p>Оберіть групу для перегляду рейтингу</p>
                                 </div>
                             ) : renderLeaderboardList(filteredGroupLeaderboard)}
                         </div>
