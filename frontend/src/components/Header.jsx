@@ -14,9 +14,9 @@ function Header({ theme, toggleTheme }) {
             { path: '/admin/schedule', label: 'Адмін-Розклад', icon: '⚙️' },
             { path: '/admin/groups', label: 'Групи', icon: '👥' }
         ] : []),
-        { path: '/schedule', label: 'Розклад', icon: '📅' },
+        ...(!isAdmin ? [{ path: '/schedule', label: 'Розклад', icon: '📅' }] : []),
         { path: '/courses', label: 'Курси', icon: '📚' },
-        { path: '/grades', label: 'Оцінки', icon: '📊' },
+        { path: '/grades', label: isAdmin ? 'Рейтинг' : 'Оцінки', icon: '📊' },
         { path: '/profile', label: 'Профіль', icon: '👤' }
     ]
 

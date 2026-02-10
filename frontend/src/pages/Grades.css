@@ -218,6 +218,18 @@
     font-size: var(--font-size-2xl);
 }
 
+/* Admin full leaderboard view */
+.leaderboard-full {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.leaderboard-full .leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
 @media (max-width: 968px) {
     .content-layout {
         grid-template-columns: 1fr;
