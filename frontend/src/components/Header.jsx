@@ -16,7 +16,7 @@ function Header({ theme, toggleTheme }) {
         ] : []),
         ...(!isAdmin ? [{ path: '/schedule', label: 'Розклад', icon: '📅' }] : []),
         { path: '/courses', label: 'Курси', icon: '📚' },
-        { path: '/grades', label: isAdmin ? 'Рейтинг' : 'Оцінки', icon: '📊' },
+        { path: '/grades', label: 'Рейтинг', icon: '📊' },
         { path: '/profile', label: 'Профіль', icon: '👤' }
     ]
 
