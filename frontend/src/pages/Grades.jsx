@@ -232,41 +232,79 @@ function Grades() {
                             </div>
 
                             <div className="group-selector">
-                                <div className="search-input-wrapper">
-                                    <span className="search-icon">🔍</span>
-                                    <input
-                                        type="text"
-                                        placeholder="Пошук групи..."
-                                        value={groupSearch}
-                                        onChange={(e) => setGroupSearch(e.target.value)}
-                                        className="search-input"
-                                    />
-                                    {groupSearch && (
+                                <div className="group-selector-buttons">
+                                    {/* Search Group Button */}
+                                    <div className="group-search-container">
                                         <button
-                                            className="clear-search"
-                                            onClick={() => setGroupSearch('')}
+                                            className="group-action-btn"
+                                            onClick={() => setGroupSearch(groupSearch ? '' : ' ')}
                                         >
-                                            ✕
+                                            <span className="btn-icon">🔍</span>
+                                            <span className="btn-text">Пошук групи</span>
                                         </button>
-                                    )}
+
+                                        {groupSearch && (
+                                            <div className="group-search-dropdown">
+                                                <div className="search-input-wrapper">
+                                                    <span className="search-icon">🔍</span>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Введіть назву групи..."
+                                                        value={groupSearch}
+                                                        onChange={(e) => setGroupSearch(e.target.value)}
+                                                        className="search-input"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        className="clear-search"
+                                                        onClick={() => setGroupSearch('')}
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+
+                                                {groupSearch.trim() && (
+                                                    <div className="group-results">
+                                                        {filteredGroups.length > 0 ? (
+                                                            filteredGroups.map((group) => (
+                                                                <div
+                                                                    key={group.id}
+                                                                    className="group-dropdown-item"
+                                                                    onClick={() => handleGroupSelect(group.name)}
+                                                                >
+                                                                    <span className="group-icon">👥</span>
+                                                                    <span className="group-name">{group.name}</span>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className="no-results">
+                                                                <p>Групи не знайдено</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Select Group Dropdown */}
+                                    <div className="group-select-container">
+                                        <select
+                                            value={selectedGroup}
+                                            onChange={(e) => setSelectedGroup(e.target.value)}
+                                            className="group-select-dropdown"
+                                        >
+                                            <option value="all">Оберіть групу</option>
+                                            {groups.map((group) => (
+                                                <option key={group.id} value={group.name}>
+                                                    {group.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
-                                {groupSearch && filteredGroups.length > 0 && (
-                                    <div className="group-dropdown">
-                                        {filteredGroups.map((group) => (
-                                            <div
-                                                key={group.id}
-                                                className="group-dropdown-item"
-                                                onClick={() => handleGroupSelect(group.name)}
-                                            >
-                                                <span className="group-icon">👥</span>
-                                                <span className="group-name">{group.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {!groupSearch && selectedGroup !== 'all' && (
+                                {selectedGroup !== 'all' && (
                                     <div className="selected-group">
                                         <span>Обрана група: <strong>{selectedGroup}</strong></span>
                                         <button
