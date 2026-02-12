@@ -1194,6 +1194,97 @@ app.post('/api/admin/courses/:id/enroll', authenticate, isAdmin, async (req, res
     }
 });
 
+// ==================== ADMIN USER MANAGEMENT ====================
+
+// Get all users with filtering and sorting
+app.get('/api/admin/users', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { role, sortBy } = req.query;
+        
+        const where = {};
+        if (role && role !== 'all') {
+            where.role = role.toUpperCase();
+        }
+
+        const orderBy = {};
+        if (sortBy === 'newest') {
+            orderBy.createdAt = 'desc';
+        } else if (sortBy === 'oldest') {
+            orderBy.createdAt = 'asc';
+        } else if (sortBy === 'name') {
+            orderBy.fullName = 'asc';
+        } else {
+            orderBy.createdAt = 'desc';
+        }
+
+        const users = await prisma.user.findMany({
+            where,
+            orderBy,
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                login: true,
+                role: true,
+                isActive: true,
+                createdAt: true,
+                lastLogin: true,
+                group: true,
+                avatar: true
+            }
+        });
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching admin users:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Toggle user active status (block/unblock)
+app.patch('/api/admin/users/:id/toggle-active', authenticate, isAdmin, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        // Don't allow blocking yourself
+        if (id === req.user.id) {
+            return res.status(400).json({ error: 'Ви не можете заблокувати себе' });
+        }
+
+        const user = await prisma.user.findUnique({ where: { id } });
+        if (!user) return res.status(404).json({ error: 'Користувача не знайдено' });
+
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data: { isActive: !user.isActive },
+            select: { id: true, isActive: true }
+        });
+
+        res.json(updatedUser);
+    } catch (error) {
+        console.error('Error toggling user status:', error);
+        res.status(500).json({ error: 'Failed to toggle user status' });
+    }
+});
+
+// Delete user
+app.delete('/api/admin/users/:id', authenticate, isAdmin, async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+
+        // Don't allow deleting yourself
+        if (id === req.user.id) {
+            return res.status(400).json({ error: 'Ви не можете видалити себе' });
+        }
+
+        await prisma.user.delete({ where: { id } });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
 // ==================== NOTIFICATIONS ENDPOINT ====================
 
 app.post('/api/notifications/subscribe', (req, res) => {

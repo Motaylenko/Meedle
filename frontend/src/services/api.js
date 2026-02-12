@@ -218,6 +218,28 @@ class ApiService {
             method: 'DELETE',
         });
     }
+
+    // Admin Users Management
+    async getAdminUsers(filters = {}) {
+        const queryParams = new URLSearchParams();
+        if (filters.role) queryParams.append('role', filters.role);
+        if (filters.sortBy) queryParams.append('sortBy', filters.sortBy);
+
+        const queryString = queryParams.toString();
+        return this.request(`/admin/users${queryString ? `?${queryString}` : ''}`);
+    }
+
+    async toggleUserActive(userId) {
+        return this.request(`/admin/users/${userId}/toggle-active`, {
+            method: 'PATCH'
+        });
+    }
+
+    async deleteUser(userId) {
+        return this.request(`/admin/users/${userId}`, {
+            method: 'DELETE'
+        });
+    }
 }
 
 export default new ApiService();

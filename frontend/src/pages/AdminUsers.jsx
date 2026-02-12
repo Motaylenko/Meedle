@@ -1,0 +1,205 @@
+import { useState, useEffect } from 'react'
+import api from '../services/api'
+import './AdminUsers.css'
+
+function AdminUsers() {
+    const [users, setUsers] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [stats, setStats] = useState({ total: 0, teachers: 0, students: 0 })
+    const [filters, setFilters] = useState({
+        role: 'all',
+        sortBy: 'newest',
+        searchQuery: ''
+    })
+
+    const loadUsers = async () => {
+        try {
+            setLoading(true)
+            const data = await api.getAdminUsers({
+                role: filters.role === 'all' ? '' : filters.role,
+                sortBy: filters.sortBy
+            })
+            setUsers(data)
+
+            // Basic stats calculation
+            const newStats = {
+                total: data.length,
+                teachers: data.filter(u => u.role === 'TEACHER').length,
+                students: data.filter(u => u.role === 'STUDENT').length
+            }
+            setStats(newStats)
+        } catch (err) {
+            console.error('Failed to load users:', err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        loadUsers()
+    }, [filters.role, filters.sortBy])
+
+    const handleToggleActive = async (userId) => {
+        try {
+            await api.toggleUserActive(userId)
+            loadUsers()
+        } catch (err) {
+            alert(err.message)
+        }
+    }
+
+    const handleDeleteUser = async (userId) => {
+        if (!window.confirm('Ви впевнені, що хочете видалити цього користувача? Цю дію неможливо скасувати.')) return
+        try {
+            await api.deleteUser(userId)
+            loadUsers()
+        } catch (err) {
+            alert(err.message)
+        }
+    }
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target
+        setFilters(prev => ({ ...prev, [name]: value }))
+    }
+
+    const filteredUsers = users.filter(user =>
+        user.fullName.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
+        user.login.toLowerCase().includes(filters.searchQuery.toLowerCase())
+    )
+
+    const getRoleBadgeClass = (role) => {
+        switch (role) {
+            case 'ADMIN': return 'badge badge-role-admin'
+            case 'TEACHER': return 'badge badge-role-teacher'
+            case 'STUDENT': return 'badge badge-role-student'
+            default: return 'badge'
+        }
+    }
+
+    return (
+        <div className="admin-users-page animate-fade-in">
+            <div className="container">
+                <div className="page-header">
+                    <div className="header-text">
+                        <h1>👥 Управління користувачами</h1>
+                        <p>Перегляд, блокування та видалення користувачів платформи</p>
+                    </div>
+                </div>
+
+                <div className="filters-bar">
+                    <div className="filter-group">
+                        <label>Пошук</label>
+                        <input
+                            type="text"
+                            name="searchQuery"
+                            placeholder="Ім'я, email або логін..."
+                            value={filters.searchQuery}
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label>Роль</label>
+                        <select name="role" value={filters.role} onChange={handleFilterChange}>
+                            <option value="all">Усі ролі</option>
+                            <option value="teacher">Викладачі</option>
+                            <option value="student">Студенти</option>
+                            <option value="admin">Адміністратори</option>
+                        </select>
+                    </div>
+                    <div className="filter-group">
+                        <label>Сортування</label>
+                        <select name="sortBy" value={filters.sortBy} onChange={handleFilterChange}>
+                            <option value="newest">Нові спочатку</option>
+                            <option value="oldest">Старі спочатку</option>
+                            <option value="name">За алфавітом</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="users-table-container">
+                    {loading ? (
+                        <div className="loading-container">
+                            <div className="loader"></div>
+                            <p>Завантаження списку користувачів...</p>
+                        </div>
+                    ) : (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Користувач</th>
+                                    <th>Роль</th>
+                                    <th>Статус</th>
+                                    <th>Група</th>
+                                    <th>Реєстрація</th>
+                                    <th>Дії</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredUsers.map(user => (
+                                    <tr key={user.id}>
+                                        <td>
+                                            <div className="user-identity">
+                                                {user.avatar ? (
+                                                    <img src={user.avatar} alt="" className="user-avatar-mini" />
+                                                ) : (
+                                                    <div className="user-avatar-mini">
+                                                        {user.fullName.charAt(0)}
+                                                    </div>
+                                                )}
+                                                <div className="user-info-text">
+                                                    <span className="user-full-name">{user.fullName}</span>
+                                                    <span className="user-email">{user.email}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={getRoleBadgeClass(user.role)}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${user.isActive ? 'badge-status-active' : 'badge-status-blocked'}`}>
+                                                {user.isActive ? 'Активний' : 'Заблокований'}
+                                            </span>
+                                        </td>
+                                        <td>{user.group || '—'}</td>
+                                        <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                                        <td>
+                                            <div className="actions-cell">
+                                                <button
+                                                    className={`action-btn ${user.isActive ? 'btn-block' : 'btn-unblock'}`}
+                                                    onClick={() => handleToggleActive(user.id)}
+                                                    title={user.isActive ? 'Заблокувати' : 'Розблокувати'}
+                                                >
+                                                    {user.isActive ? '🚫' : '✅'}
+                                                </button>
+                                                <button
+                                                    className="action-btn btn-delete"
+                                                    onClick={() => handleDeleteUser(user.id)}
+                                                    title="Видалити"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {filteredUsers.length === 0 && !loading && (
+                                    <tr>
+                                        <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
+                                            Користувачів не знайдено
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default AdminUsers
