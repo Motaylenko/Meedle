@@ -290,6 +290,8 @@
     max-width: 500px;
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-xl);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-header {
