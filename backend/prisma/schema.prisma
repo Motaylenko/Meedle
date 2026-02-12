@@ -25,6 +25,8 @@ model User {
   specialty         String?
   group             String?
   isActive          Boolean   @default(true)
+  blockReason       String?
+  blockedUntil      DateTime?
   confirmationToken String?   @unique
   
   rating            Int       @default(0)

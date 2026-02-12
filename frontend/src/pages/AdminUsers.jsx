@@ -12,6 +12,16 @@ function AdminUsers() {
         searchQuery: ''
     })
 
+    // Block Modal state
+    const [blockModal, setBlockModal] = useState({
+        isOpen: false,
+        userId: null,
+        userName: '',
+        reason: '',
+        duration: 'indefinite', // 'indefinite', 'hour', 'day', 'week', 'custom'
+        customDate: ''
+    })
+
     const loadUsers = async () => {
         try {
             setLoading(true)
@@ -39,9 +49,44 @@ function AdminUsers() {
         loadUsers()
     }, [filters.role, filters.sortBy])
 
-    const handleToggleActive = async (userId) => {
+    const handleToggleActive = async (user) => {
+        // If unblocking, just do it
+        if (!user.isActive) {
+            try {
+                await api.toggleUserActive(user.id)
+                loadUsers()
+            } catch (err) {
+                alert(err.message)
+            }
+            return
+        }
+
+        // If blocking, show modal
+        setBlockModal({
+            isOpen: true,
+            userId: user.id,
+            userName: user.fullName,
+            reason: '',
+            duration: 'indefinite',
+            customDate: ''
+        })
+    }
+
+    const handleConfirmBlock = async () => {
+        const { userId, reason, duration, customDate } = blockModal
+
+        let blockedUntil = null
+        if (duration !== 'indefinite') {
+            const now = new Date()
+            if (duration === 'hour') blockedUntil = new Date(now.getTime() + 60 * 60 * 1000)
+            else if (duration === 'day') blockedUntil = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+            else if (duration === 'week') blockedUntil = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+            else if (duration === 'custom' && customDate) blockedUntil = new Date(customDate)
+        }
+
         try {
-            await api.toggleUserActive(userId)
+            await api.toggleUserActive(userId, { reason, blockedUntil })
+            setBlockModal(prev => ({ ...prev, isOpen: false }))
             loadUsers()
         } catch (err) {
             alert(err.message)
@@ -175,7 +220,7 @@ function AdminUsers() {
                                             <div className="actions-cell">
                                                 <button
                                                     className={`action-btn ${user.isActive ? 'btn-block' : 'btn-unblock'}`}
-                                                    onClick={() => handleToggleActive(user.id)}
+                                                    onClick={() => handleToggleActive(user)}
                                                     title={user.isActive ? 'Заблокувати' : 'Розблокувати'}
                                                 >
                                                     {user.isActive ? '🚫' : '✅'}
@@ -204,6 +249,63 @@ function AdminUsers() {
                     </table>
                 </div>
             </div>
+
+            {/* Block Modal */}
+            {blockModal.isOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-slide-up">
+                        <div className="modal-header">
+                            <h3>Блокування користувача</h3>
+                            <button className="close-btn" onClick={() => setBlockModal(prev => ({ ...prev, isOpen: false }))}>&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Ви заблоковуєте: <strong>{blockModal.userName}</strong></p>
+
+                            <div className="form-group">
+                                <label>Причина блокування:</label>
+                                <textarea
+                                    placeholder="Введіть причину (наприклад: Порушення правил платформи)"
+                                    value={blockModal.reason}
+                                    onChange={(e) => setBlockModal(prev => ({ ...prev, reason: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Термін блокування:</label>
+                                <select
+                                    value={blockModal.duration}
+                                    onChange={(e) => setBlockModal(prev => ({ ...prev, duration: e.target.value }))}
+                                >
+                                    <option value="indefinite">На невизначений термін</option>
+                                    <option value="hour">На 1 годину</option>
+                                    <option value="day">На 1 добу</option>
+                                    <option value="week">На 1 тиждень</option>
+                                    <option value="custom">Інша дата</option>
+                                </select>
+                            </div>
+
+                            {blockModal.duration === 'custom' && (
+                                <div className="form-group">
+                                    <label>Оберіть дату та час:</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={blockModal.customDate}
+                                        onChange={(e) => setBlockModal(prev => ({ ...prev, customDate: e.target.value }))}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-cancel" onClick={() => setBlockModal(prev => ({ ...prev, isOpen: false }))}>
+                                Скасувати
+                            </button>
+                            <button className="btn-confirm-block" onClick={handleConfirmBlock}>
+                                Заблокувати
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

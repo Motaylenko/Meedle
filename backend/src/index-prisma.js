@@ -171,7 +171,30 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         if (!user.isActive) {
-            return res.status(403).json({ error: 'Ваш обліковий запис тимчасово заблоковано. Якщо ви не згодні з цим рішенням, зверніться до адміністратора.' });
+            // Check if block duration has expired
+            if (user.blockedUntil && new Date(user.blockedUntil) < new Date()) {
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { isActive: true, blockReason: null, blockedUntil: null }
+                });
+            } else {
+                let errorMsg = 'Ваш обліковий запис заблоковано.';
+                if (user.blockReason) errorMsg += `\nПричина: ${user.blockReason}`;
+                if (user.blockedUntil) {
+                    const date = new Date(user.blockedUntil).toLocaleString('uk-UA', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    errorMsg += `\nЗаблоковано до: ${date}`;
+                } else {
+                    errorMsg += `\nТермін: Постійно`;
+                }
+                errorMsg += '\nЯкщо ви не згодні з цим рішенням, зверніться до адміністратора.';
+                return res.status(403).json({ error: errorMsg });
+            }
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -1254,10 +1277,17 @@ app.patch('/api/admin/users/:id/toggle-active', authenticate, isAdmin, async (re
         const user = await prisma.user.findUnique({ where: { id } });
         if (!user) return res.status(404).json({ error: 'Користувача не знайдено' });
 
+        const { reason, blockedUntil } = req.body;
+        const newIsActive = !user.isActive;
+
         const updatedUser = await prisma.user.update({
             where: { id },
-            data: { isActive: !user.isActive },
-            select: { id: true, isActive: true }
+            data: {
+                isActive: newIsActive,
+                blockReason: newIsActive ? null : (reason || null),
+                blockedUntil: newIsActive ? null : (blockedUntil ? new Date(blockedUntil) : null)
+            },
+            select: { id: true, isActive: true, blockReason: true, blockedUntil: true }
         });
 
         res.json(updatedUser);

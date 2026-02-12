@@ -229,9 +229,10 @@ class ApiService {
         return this.request(`/admin/users${queryString ? `?${queryString}` : ''}`);
     }
 
-    async toggleUserActive(userId) {
+    async toggleUserActive(userId, blockData = {}) {
         return this.request(`/admin/users/${userId}/toggle-active`, {
-            method: 'PATCH'
+            method: 'PATCH',
+            body: Object.keys(blockData).length > 0 ? JSON.stringify(blockData) : undefined
         });
     }
 
