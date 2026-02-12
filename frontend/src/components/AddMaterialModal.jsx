@@ -38,7 +38,10 @@ function AddMaterialModal({ isOpen, onClose, onSubmit, courseId }) {
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content add-material-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>📚 Додати навчальний матеріал</h2>
+                    <div className="modal-title">
+                        <span className="modal-icon">📚</span>
+                        <h2>Додати навчальний матеріал</h2>
+                    </div>
                     <button className="close-btn" onClick={onClose}>×</button>
                 </div>
 
@@ -152,7 +155,7 @@ function AddMaterialModal({ isOpen, onClose, onSubmit, courseId }) {
                             Скасувати
                         </button>
                         <button type="submit" className="btn-primary">
-                            ✅ Додати матеріал
+                            Додати матеріал
                         </button>
                     </div>
                 </form>

@@ -1,36 +1,104 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
 .add-material-modal {
-    max-width: 600px;
-    width: 90%;
+    background: #111214;
+    max-width: 550px;
+    width: 95%;
+    border-radius: 12px;
+    border: 1px solid #2d2e32;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: #1a1b1e;
+    margin: 20px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #2d2e32;
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.modal-icon {
+    width: 40px;
+    height: 40px;
+    background: #2d2e32;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
 }
 
 .material-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
+    padding: 0 20px 20px 20px;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
+    margin-bottom: 20px;
 }
 
 .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--color-text-primary);
-    font-size: var(--font-size-sm);
+    color: #ffffff;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-    padding: var(--spacing-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-base);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    transition: all var(--transition-fast);
+    width: 100%;
+    background: #1a1b1e;
+    border: 1px solid #2d2e32;
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #555;
 }
 
 .form-group input:focus,
@@ -38,56 +106,43 @@
 .form-group textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: #1c1d21;
 }
 
 .form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-    font-family: inherit;
-}
-
-.form-hint {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-tertiary);
-    margin-top: -4px;
+    min-height: 100px;
+    resize: none;
 }
 
 .modal-footer {
+    background: #1a1b1e;
+    margin: 20px 0 0 0;
+    padding: 15px 20px;
+    border-radius: 12px;
     display: flex;
     justify-content: flex-end;
-    gap: var(--spacing-md);
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--color-border);
+    gap: 12px;
+    border: 1px solid #2d2e32;
+    box-sizing: border-box;
 }
 
-.btn-primary,
 .btn-secondary {
-    padding: var(--spacing-sm) var(--spacing-xl);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-base);
-    font-weight: 600;
+    background: transparent;
+    border: 1px solid #2d2e32;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all var(--transition-fast);
-    border: none;
+    font-size: 0.9rem;
 }
 
 .btn-primary {
     background: var(--color-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--color-primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-    background: var(--color-bg-tertiary);
-    color: var(--color-text-secondary);
-}
-
-.btn-secondary:hover {
-    background: var(--color-bg-secondary);
+    border: none;
+    color: #ffffff;
+    padding: 10px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
