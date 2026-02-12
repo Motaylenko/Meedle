@@ -190,8 +190,8 @@ function Courses() {
                                     </button>
                                 </div>
 
-                                <div className={`courses-container ${viewMode}`}>
-                                    {!collapsedGroups[groupName] && (
+                                <div className="courses-container-wrapper">
+                                    <div className={`courses-container ${viewMode}`}>
                                         <div className={viewMode === 'grid' ? 'courses-grid' : 'courses-list'}>
                                             {groupCourses.map(course => (
                                                 <div
@@ -239,7 +239,7 @@ function Courses() {
                                                 </div>
                                             ))}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         ))
