@@ -1,18 +1,75 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import AddMaterialModal from '../components/AddMaterialModal'
 import './CoursePage.css'
 
 function CoursePage() {
     const { courseId } = useParams()
     const navigate = useNavigate()
     const [course, setCourse] = useState(null)
+    const [materials, setMaterials] = useState([])
     const [activeTab, setActiveTab] = useState('materials')
     const [loading, setLoading] = useState(true)
+    const [materialsLoading, setMaterialsLoading] = useState(false)
+    const [isAddMaterialModalOpen, setIsAddMaterialModalOpen] = useState(false)
+    const [userRole, setUserRole] = useState(null)
 
     useEffect(() => {
         loadCourseData()
+        loadUserRole()
     }, [courseId])
+
+    useEffect(() => {
+        if (activeTab === 'materials' && course) {
+            loadMaterials()
+        }
+    }, [activeTab, course])
+
+    const loadUserRole = async () => {
+        try {
+            const user = await api.getUser()
+            setUserRole(user.role)
+        } catch (err) {
+            console.error('Failed to load user:', err)
+        }
+    }
+
+    const loadMaterials = async () => {
+        try {
+            setMaterialsLoading(true)
+            const data = await api.getCourseMaterials(courseId)
+            setMaterials(data)
+        } catch (err) {
+            console.error('Failed to load materials:', err)
+            setMaterials([])
+        } finally {
+            setMaterialsLoading(false)
+        }
+    }
+
+    const handleAddMaterial = async (materialData) => {
+        try {
+            await api.createMaterial(courseId, materialData)
+            setIsAddMaterialModalOpen(false)
+            await loadMaterials()
+        } catch (err) {
+            console.error('Failed to create material:', err)
+            alert('Помилка при створенні матеріалу')
+        }
+    }
+
+    const handleDeleteMaterial = async (materialId) => {
+        if (!confirm('Ви впевнені, що хочете видалити цей матеріал?')) return
+
+        try {
+            await api.deleteMaterial(materialId)
+            await loadMaterials()
+        } catch (err) {
+            console.error('Failed to delete material:', err)
+            alert('Помилка при видаленні матеріалу')
+        }
+    }
 
     const loadCourseData = async () => {
         try {
@@ -203,33 +260,89 @@ function CoursePage() {
                 <div className="tab-content">
                     {activeTab === 'materials' && (
                         <div className="materials-section">
-                            <h2>Навчальні матеріали</h2>
-                            <div className="materials-list">
-                                {course.materials.map(material => (
-                                    <div key={material.id} className="material-card">
-                                        <div className="material-icon">
-                                            {material.type === 'lecture' ? '📄' : '🎥'}
-                                        </div>
-                                        <div className="material-content">
-                                            <h3>{material.title}</h3>
-                                            <p>{material.description}</p>
-                                            <div className="material-meta">
-                                                <span>📅 {material.date}</span>
-                                                {material.duration && <span>⏱️ {material.duration}</span>}
-                                            </div>
-                                            {material.files && (
-                                                <div className="material-files">
-                                                    {material.files.map((file, idx) => (
-                                                        <button key={idx} className="file-button">
-                                                            📎 {file}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="materials-header">
+                                <h2>Навчальні матеріали</h2>
+                                {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                    <button
+                                        className="add-material-btn"
+                                        onClick={() => setIsAddMaterialModalOpen(true)}
+                                    >
+                                        <span>+</span> Додати матеріал
+                                    </button>
+                                )}
                             </div>
+
+                            {materialsLoading ? (
+                                <div className="loading-state">
+                                    <div className="spinner"></div>
+                                    <p>Завантаження матеріалів...</p>
+                                </div>
+                            ) : materials.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>📚 Матеріалів поки немає</p>
+                                    {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                        <p className="empty-hint">Натисніть "Додати матеріал" щоб створити перший</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="materials-list">
+                                    {materials.map(material => {
+                                        const getIcon = (type) => {
+                                            switch (type) {
+                                                case 'video': return '🎥'
+                                                case 'link': return '🔗'
+                                                case 'text': return '📝'
+                                                default: return '📄'
+                                            }
+                                        }
+
+                                        return (
+                                            <div key={material.id} className="material-card">
+                                                <div className="material-icon">
+                                                    {getIcon(material.type)}
+                                                </div>
+                                                <div className="material-content">
+                                                    <div className="material-header-row">
+                                                        <h3>{material.title}</h3>
+                                                        {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                                            <button
+                                                                className="delete-material-btn"
+                                                                onClick={() => handleDeleteMaterial(material.id)}
+                                                                title="Видалити матеріал"
+                                                            >
+                                                                🗑️
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                    {material.description && <p>{material.description}</p>}
+                                                    <div className="material-meta">
+                                                        <span>📅 {new Date(material.createdAt).toLocaleDateString('uk-UA')}</span>
+                                                        {material.creator && <span>👤 {material.creator.fullName}</span>}
+                                                    </div>
+                                                    {(material.fileUrl || material.content) && (
+                                                        <div className="material-actions">
+                                                            {material.type === 'text' ? (
+                                                                <div className="material-text-content">
+                                                                    {material.content}
+                                                                </div>
+                                                            ) : (
+                                                                <a
+                                                                    href={material.fileUrl || material.content}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="material-link-btn"
+                                                                >
+                                                                    {material.type === 'video' ? '▶️ Переглянути відео' : '📥 Відкрити'}
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -319,6 +432,13 @@ function CoursePage() {
                     )}
                 </div>
             </div>
+
+            <AddMaterialModal
+                isOpen={isAddMaterialModalOpen}
+                onClose={() => setIsAddMaterialModalOpen(false)}
+                onSubmit={handleAddMaterial}
+                courseId={courseId}
+            />
         </div>
     )
 }

@@ -241,6 +241,31 @@ class ApiService {
             method: 'DELETE'
         });
     }
+
+    // Materials Management
+    async getCourseMaterials(courseId) {
+        return this.request(`/courses/${courseId}/materials`);
+    }
+
+    async createMaterial(courseId, materialData) {
+        return this.request(`/courses/${courseId}/materials`, {
+            method: 'POST',
+            body: JSON.stringify(materialData)
+        });
+    }
+
+    async updateMaterial(materialId, materialData) {
+        return this.request(`/materials/${materialId}`, {
+            method: 'PUT',
+            body: JSON.stringify(materialData)
+        });
+    }
+
+    async deleteMaterial(materialId) {
+        return this.request(`/materials/${materialId}`, {
+            method: 'DELETE'
+        });
+    }
 }
 
 export default new ApiService();

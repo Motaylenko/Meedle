@@ -42,6 +42,7 @@ model User {
   grades          Grade[]
   tasks           Task[]
   teacherCourses  Course[]      @relation("TeacherCourses")
+  createdMaterials Material[]   @relation("CreatedMaterials")
   settings        UserSettings?
 
   @@map("users")
@@ -100,6 +101,7 @@ model Course {
   schedules   Schedule[]
   grades      Grade[]
   tasks       Task[]
+  courseMaterials Material[]
 
   @@map("courses")
 }
@@ -210,4 +212,28 @@ model Leaderboard {
   updatedAt DateTime @updatedAt
 
   @@map("leaderboard")
+}
+
+// Material model (Learning resources)
+model Material {
+  id          Int      @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  type        String   // file, video, link, text, pdf
+  content     String?  // URL for files/videos/links, or text content
+  fileUrl     String?  // Direct file URL if uploaded
+  fileName    String?  // Original filename
+  fileSize    Int?     // File size in bytes
+  order       Int      @default(0) // For sorting materials
+  isVisible   Boolean  @default(true)
+  createdBy   Int?     // Teacher who created it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  creator     User?    @relation("CreatedMaterials", fields: [createdBy], references: [id])
+
+  @@map("materials")
 }
