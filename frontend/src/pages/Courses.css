@@ -99,22 +99,13 @@
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
     box-shadow: var(--shadow-md);
     transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
     cursor: pointer;
-}
-
-.course-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: var(--course-color);
+    display: flex;
+    flex-direction: column;
 }
 
 .course-card:hover {
@@ -124,37 +115,64 @@
 }
 
 .course-header {
+    background: var(--course-color);
+    padding: var(--spacing-xl);
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
     gap: var(--spacing-md);
+    min-height: 200px;
+    position: relative;
     margin-bottom: var(--spacing-lg);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
+}
+
+.course-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+    pointer-events: none;
 }
 
 .course-icon {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
     border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: var(--font-size-2xl);
-    box-shadow: var(--shadow-md);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacing-xs);
 }
 
 .course-info {
-    flex: 1;
+    position: relative;
+    z-index: 2;
 }
 
 .course-info h3 {
     font-size: var(--font-size-xl);
-    margin-bottom: var(--spacing-xs);
-    color: var(--color-text-primary);
+    margin-bottom: 8px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+    font-weight: 800;
 }
 
 .course-info p {
     font-size: var(--font-size-sm);
-    color: var(--color-text-tertiary);
+    color: rgba(255, 255, 255, 0.95);
     margin: 0;
+    font-weight: 500;
+    line-height: 1.5;
+    display: block;
 }
 
 .course-footer {
@@ -195,6 +213,7 @@
 
 .progress-section {
     margin-bottom: var(--spacing-lg);
+    padding: 0 var(--spacing-xl);
 }
 
 .progress-header {
@@ -210,7 +229,7 @@
     color: var(--color-text-primary);
 }
 
-.progress-bar {
+.progress-bar-container {
     height: 8px;
     background: var(--color-bg-tertiary);
     border-radius: var(--radius-full);
@@ -225,8 +244,10 @@
 
 .course-footer {
     display: flex;
+    align-items: center;
     gap: var(--spacing-md);
-    padding-top: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-xl) var(--spacing-xl);
+    margin-top: auto;
     border-top: 1px solid var(--color-border);
 }
 
