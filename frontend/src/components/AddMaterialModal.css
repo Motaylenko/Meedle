@@ -16,10 +16,31 @@
     background: #111214;
     max-width: 550px;
     width: 95%;
+    max-height: 85vh;
+    overflow-y: auto;
     border-radius: 12px;
     border: 1px solid #2d2e32;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #3f4045 transparent;
+}
+
+.add-material-modal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.add-material-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.add-material-modal::-webkit-scrollbar-thumb {
+    background-color: #3f4045;
+    border-radius: 20px;
+    border: none;
+}
+
+.add-material-modal::-webkit-scrollbar-thumb:hover {
+    background-color: #525359;
 }
 
 .modal-header {
