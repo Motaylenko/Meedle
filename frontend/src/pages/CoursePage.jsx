@@ -29,6 +29,7 @@ function CoursePage() {
     const loadUserRole = async () => {
         try {
             const user = await api.getUser()
+            console.log('User loaded:', user)
             setUserRole(user.role)
         } catch (err) {
             console.error('Failed to load user:', err)
@@ -262,14 +263,12 @@ function CoursePage() {
                         <div className="materials-section">
                             <div className="materials-header">
                                 <h2>Навчальні матеріали</h2>
-                                {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
-                                    <button
-                                        className="add-material-btn"
-                                        onClick={() => setIsAddMaterialModalOpen(true)}
-                                    >
-                                        <span>+</span> Додати матеріал
-                                    </button>
-                                )}
+                                <button
+                                    className="add-material-btn"
+                                    onClick={() => setIsAddMaterialModalOpen(true)}
+                                >
+                                    <span>+</span> Додати матеріал
+                                </button>
                             </div>
 
                             {materialsLoading ? (
