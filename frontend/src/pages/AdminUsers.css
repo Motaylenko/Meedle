@@ -164,10 +164,11 @@
 .admin-users-page th:nth-child(1),
 .admin-users-page td:nth-child(1) {
     width: 35%;
-    text-align: left;
+    text-align: center;
+    /* User info column centered */
 }
 
-/* User info column */
+/* Role */
 .admin-users-page th:nth-child(2),
 .admin-users-page td:nth-child(2) {
     width: 12%;
@@ -249,8 +250,8 @@
 .admin-users-page .user-identity {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
-    text-align: left;
 }
 
 .admin-users-page .user-avatar-mini {

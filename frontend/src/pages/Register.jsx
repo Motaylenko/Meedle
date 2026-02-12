@@ -34,12 +34,14 @@ const Register = () => {
 
         setLoading(true);
         try {
-            // Combine names for the server if needed, or send as is
-            // For now, let's assume the API handles these fields
+            // Combine names for the server
+            const { lastName, firstName, middleName, ...rest } = formData;
+            const fullName = `${lastName} ${firstName} ${middleName}`.trim();
+
             const response = await fetch('http://localhost:5000/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...rest, fullName }),
             });
 
             const data = await response.json();
