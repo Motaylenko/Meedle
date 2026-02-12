@@ -368,8 +368,8 @@
 
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-md);
+    justify-content: center;
+    gap: var(--spacing-xl);
     margin-top: var(--spacing-xl);
 }
 

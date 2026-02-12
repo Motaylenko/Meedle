@@ -564,8 +564,8 @@
     background: var(--color-bg-secondary);
     border-top: 1px solid var(--color-border);
     display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-md);
+    justify-content: center;
+    gap: var(--spacing-xl);
 }
 
 .btn-cancel {

@@ -106,6 +106,13 @@
     background: var(--color-bg-primary);
 }
 
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+}
+
 .details-header {
     display: flex;
     justify-content: space-between;
