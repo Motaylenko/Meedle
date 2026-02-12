@@ -110,7 +110,7 @@ function AdminGroups() {
                         <p>Створюйте групи та призначайте до них студентів</p>
                     </div>
                     <button className="add-group-btn" onClick={() => setIsGroupModalOpen(true)}>
-                        + Створити групу
+                        <span>+</span> Створити групу
                     </button>
                 </div>
 

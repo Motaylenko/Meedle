@@ -257,7 +257,7 @@ function AdminSchedule() {
                                 <p>Редагування тижневого графіка та тимчасових змін</p>
                             </div>
                             <button className="add-lesson-btn" onClick={() => handleOpenEditLesson()}>
-                                + Додати пару
+                                <span>+</span> Додати пару
                             </button>
                         </div>
 

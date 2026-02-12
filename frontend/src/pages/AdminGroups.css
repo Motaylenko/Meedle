@@ -2,6 +2,18 @@
     animation: fadeIn var(--transition-base) ease-out;
 }
 
+.admin-groups-page .page-header {
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.admin-groups-page .header-text {
+    margin-bottom: var(--spacing-md);
+}
+
 .groups-management-grid {
     display: grid;
     grid-template-columns: 300px 1fr;
@@ -245,20 +257,30 @@
 
 /* Modal and Buttons */
 .add-group-btn {
-    padding: var(--spacing-sm) var(--spacing-xl);
+    padding: 12px 24px;
     background: var(--color-primary);
     color: white;
     border: none;
     border-radius: var(--radius-lg);
     font-weight: 600;
     cursor: pointer;
-    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
     transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
 }
 
 .add-group-btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+    background: var(--color-primary-dark);
+}
+
+.add-group-btn span {
+    font-size: 1.5rem;
+    line-height: 1;
+    font-weight: 500;
 }
 
 @media (max-width: 1024px) {
