@@ -124,26 +124,26 @@ function AdminUsers() {
                 </div>
 
                 <div className="users-table-container">
-                    {loading ? (
-                        <div className="loading-container">
-                            <div className="loader"></div>
-                            <p>Завантаження списку користувачів...</p>
-                        </div>
-                    ) : (
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Користувач</th>
-                                    <th>Роль</th>
-                                    <th>Статус</th>
-                                    <th>Група</th>
-                                    <th>Реєстрація</th>
-                                    <th>Дії</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredUsers.map(user => (
-                                    <tr key={user.id}>
+                    <div className={`loading-overlay ${loading ? 'active' : ''}`}>
+                        <div className="loader"></div>
+                        <p>Оновлення списку...</p>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Користувач</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Група</th>
+                                <th>Реєстрація</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody className={loading ? 'content-loading' : ''}>
+                            {filteredUsers.length > 0 ? (
+                                filteredUsers.map(user => (
+                                    <tr key={user.id} className="user-row-animate">
                                         <td>
                                             <div className="user-identity">
                                                 {user.avatar ? (
@@ -190,19 +190,18 @@ function AdminUsers() {
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
-                                {filteredUsers.length === 0 && !loading && (
-                                    <tr>
-                                        <td colSpan="6">
-                                            <div className="empty-state">
-                                                <p>Жодного користувача не знайдено за вашим запитом</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
+                                ))
+                            ) : !loading && (
+                                <tr>
+                                    <td colSpan="6">
+                                        <div className="empty-state">
+                                            <p>Жодного користувача не знайдено за вашим запитом</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

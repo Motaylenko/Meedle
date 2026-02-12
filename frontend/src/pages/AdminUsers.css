@@ -1,8 +1,9 @@
 /* AdminUsers.css - Premium Theme-Aware Admin UI */
 .admin-users-page {
-    animation: fadeIn var(--transition-base) ease-out;
+    animation: fadeIn 0.4s ease-out;
     padding: 0.5rem 0;
     min-height: calc(100vh - 80px);
+    transition: background-color 0.3s ease;
 }
 
 .admin-users-page .container {
@@ -118,13 +119,85 @@
     box-shadow: var(--shadow-md);
     overflow: hidden;
     border: 1px solid var(--color-border);
+    position: relative;
+    min-height: 400px;
+    transition: all 0.3s ease;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(var(--color-bg-primary-rgb, 255, 255, 255), 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.content-loading {
+    filter: blur(2px);
+    opacity: 0.6;
+    transition: all 0.3s ease;
 }
 
 .admin-users-page table {
     width: 100%;
     border-collapse: collapse;
     text-align: center;
+    table-layout: fixed;
+    /* Fix column jumping */
 }
+
+.admin-users-page th:nth-child(1),
+.admin-users-page td:nth-child(1) {
+    width: 35%;
+    text-align: left;
+}
+
+/* User info column */
+.admin-users-page th:nth-child(2),
+.admin-users-page td:nth-child(2) {
+    width: 12%;
+}
+
+/* Role */
+.admin-users-page th:nth-child(3),
+.admin-users-page td:nth-child(3) {
+    width: 15%;
+}
+
+/* Status */
+.admin-users-page th:nth-child(4),
+.admin-users-page td:nth-child(4) {
+    width: 12%;
+}
+
+/* Group */
+.admin-users-page th:nth-child(5),
+.admin-users-page td:nth-child(5) {
+    width: 14%;
+}
+
+/* Registration */
+.admin-users-page th:nth-child(6),
+.admin-users-page td:nth-child(6) {
+    width: 12%;
+}
+
+/* Actions */
 
 .admin-users-page thead {
     background: var(--color-bg-secondary);
@@ -145,7 +218,23 @@
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text-primary);
     vertical-align: middle;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.user-row-animate {
+    animation: slideInRow 0.3s ease forwards;
+}
+
+@keyframes slideInRow {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .admin-users-page tr:last-child td {
@@ -160,8 +249,8 @@
 .admin-users-page .user-identity {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 1rem;
+    text-align: left;
 }
 
 .admin-users-page .user-avatar-mini {
@@ -336,6 +425,18 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* Badges and Buttons Transitions */
+.admin-users-page .badge,
+.admin-users-page .action-btn,
+.admin-users-page .control-group select,
+.admin-users-page .search-input {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.admin-users-page tr {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Animations */
