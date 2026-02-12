@@ -413,6 +413,173 @@ app.get('/api/courses/:id/details', async (req, res) => {
     }
 });
 
+// ==================== MATERIALS ENDPOINTS ====================
+
+// Get all materials for a course
+app.get('/api/courses/:courseId/materials', authenticate, async (req, res) => {
+    try {
+        const courseId = parseInt(req.params.courseId);
+
+        const materials = await prisma.material.findMany({
+            where: {
+                courseId,
+                isVisible: true
+            },
+            include: {
+                creator: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        avatar: true
+                    }
+                }
+            },
+            orderBy: { order: 'asc' }
+        });
+
+        res.json(materials);
+    } catch (error) {
+        console.error('Error fetching materials:', error);
+        res.status(500).json({ error: 'Failed to fetch materials' });
+    }
+});
+
+// Create a new material
+app.post('/api/courses/:courseId/materials', authenticate, async (req, res) => {
+    try {
+        const courseId = parseInt(req.params.courseId);
+        const userId = req.user.id;
+        const { title, description, type, content, fileUrl, fileName, fileSize, order } = req.body;
+
+        // Verify user is teacher of this course or admin
+        const course = await prisma.course.findUnique({
+            where: { id: courseId }
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        if (req.user.role !== 'ADMIN' && course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Only course teacher or admin can add materials' });
+        }
+
+        const material = await prisma.material.create({
+            data: {
+                courseId,
+                title,
+                description,
+                type,
+                content,
+                fileUrl,
+                fileName,
+                fileSize,
+                order: order || 0,
+                createdBy: userId
+            },
+            include: {
+                creator: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        avatar: true
+                    }
+                }
+            }
+        });
+
+        res.json(material);
+    } catch (error) {
+        console.error('Error creating material:', error);
+        res.status(500).json({ error: 'Failed to create material' });
+    }
+});
+
+// Update a material
+app.put('/api/materials/:id', authenticate, async (req, res) => {
+    try {
+        const materialId = parseInt(req.params.id);
+        const userId = req.user.id;
+        const { title, description, type, content, fileUrl, fileName, fileSize, order, isVisible } = req.body;
+
+        // Get material with course info
+        const existingMaterial = await prisma.material.findUnique({
+            where: { id: materialId },
+            include: { course: true }
+        });
+
+        if (!existingMaterial) {
+            return res.status(404).json({ error: 'Material not found' });
+        }
+
+        // Verify permissions
+        if (req.user.role !== 'ADMIN' && existingMaterial.course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Only course teacher or admin can update materials' });
+        }
+
+        const material = await prisma.material.update({
+            where: { id: materialId },
+            data: {
+                ...(title !== undefined && { title }),
+                ...(description !== undefined && { description }),
+                ...(type !== undefined && { type }),
+                ...(content !== undefined && { content }),
+                ...(fileUrl !== undefined && { fileUrl }),
+                ...(fileName !== undefined && { fileName }),
+                ...(fileSize !== undefined && { fileSize }),
+                ...(order !== undefined && { order }),
+                ...(isVisible !== undefined && { isVisible })
+            },
+            include: {
+                creator: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        avatar: true
+                    }
+                }
+            }
+        });
+
+        res.json(material);
+    } catch (error) {
+        console.error('Error updating material:', error);
+        res.status(500).json({ error: 'Failed to update material' });
+    }
+});
+
+// Delete a material
+app.delete('/api/materials/:id', authenticate, async (req, res) => {
+    try {
+        const materialId = parseInt(req.params.id);
+        const userId = req.user.id;
+
+        // Get material with course info
+        const material = await prisma.material.findUnique({
+            where: { id: materialId },
+            include: { course: true }
+        });
+
+        if (!material) {
+            return res.status(404).json({ error: 'Material not found' });
+        }
+
+        // Verify permissions
+        if (req.user.role !== 'ADMIN' && material.course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Only course teacher or admin can delete materials' });
+        }
+
+        await prisma.material.delete({
+            where: { id: materialId }
+        });
+
+        res.json({ message: 'Material deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting material:', error);
+        res.status(500).json({ error: 'Failed to delete material' });
+    }
+});
+
 // ==================== SCHEDULE ENDPOINTS ====================
 
 // Get full schedule (optionally filtered by group)
