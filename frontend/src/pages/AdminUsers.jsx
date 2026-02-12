@@ -83,37 +83,42 @@ function AdminUsers() {
             <div className="container">
                 <div className="page-header">
                     <div className="header-text">
-                        <h1>👥 Управління користувачами</h1>
+                        <div className="header-icon-container">
+                            <span className="header-icon">👥</span>
+                        </div>
+                        <h1>Управління користувачами</h1>
                         <p>Перегляд, блокування та видалення користувачів платформи</p>
                     </div>
                 </div>
 
-                <div className="filters-bar">
-                    <div className="filter-group">
-                        <label>Пошук</label>
-                        <input
-                            type="text"
-                            name="searchQuery"
-                            placeholder="Ім'я, email або логін..."
-                            value={filters.searchQuery}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="filter-group">
-                        <label>Роль</label>
+                <div className="courses-controls">
+                    <div className="control-group filter-select">
                         <select name="role" value={filters.role} onChange={handleFilterChange}>
-                            <option value="all">Усі ролі</option>
+                            <option value="all">Усі ролі (крім адмінів)</option>
                             <option value="teacher">Викладачі</option>
                             <option value="student">Студенти</option>
                             <option value="admin">Адміністратори</option>
                         </select>
                     </div>
-                    <div className="filter-group">
-                        <label>Сортування</label>
+
+                    <div className="control-group search-input-wrapper">
+                        <input
+                            type="text"
+                            name="searchQuery"
+                            placeholder="Знайдіть за ім'ям, email або логіном..."
+                            value={filters.searchQuery}
+                            onChange={handleFilterChange}
+                            className="search-input"
+                        />
+                        <span className="search-icon">🔍</span>
+                    </div>
+
+                    <div className="control-group sort-select">
+                        <label>Сортувати за:</label>
                         <select name="sortBy" value={filters.sortBy} onChange={handleFilterChange}>
                             <option value="newest">Нові спочатку</option>
                             <option value="oldest">Старі спочатку</option>
-                            <option value="name">За алфавітом</option>
+                            <option value="name">Ім'ям (А-Я)</option>
                         </select>
                     </div>
                 </div>
@@ -188,8 +193,10 @@ function AdminUsers() {
                                 ))}
                                 {filteredUsers.length === 0 && !loading && (
                                     <tr>
-                                        <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-secondary)' }}>
-                                            Користувачів не знайдено
+                                        <td colSpan="6">
+                                            <div className="empty-state">
+                                                <p>Жодного користувача не знайдено за вашим запитом</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
