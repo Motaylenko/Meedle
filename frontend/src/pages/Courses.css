@@ -11,7 +11,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: 0;
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-secondary);
     border-radius: var(--radius-lg);
@@ -384,10 +384,38 @@
     color: var(--color-text-tertiary);
     cursor: pointer;
     padding: 4px;
+    transition: transform var(--transition-base);
 }
 
-.course-group-section.collapsed .group-folder-header {
-    margin-bottom: var(--spacing-md);
+.course-group-section.collapsed .collapse-btn {
+    transform: rotate(-90deg);
+}
+
+.courses-container-wrapper {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.course-group-section.collapsed .courses-container-wrapper {
+    grid-template-rows: 0fr;
+}
+
+.courses-container {
+    overflow: hidden;
+    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    transform: translateY(0);
+    padding-top: var(--spacing-xl);
+}
+
+.course-group-section.collapsed .courses-container {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.course-group-section .group-folder-header {
+    margin-bottom: 0 !important;
 }
 
 /* List View Style */
