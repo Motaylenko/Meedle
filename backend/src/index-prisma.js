@@ -171,7 +171,7 @@ app.post('/api/auth/login', async (req, res) => {
         }
 
         if (!user.isActive) {
-            return res.status(403).json({ error: 'Ваш акаунт ще не активовано адміністратором' });
+            return res.status(403).json({ error: 'Ваш обліковий запис тимчасово заблоковано. Якщо ви не згодні з цим рішенням, зверніться до адміністратора.' });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -1200,7 +1200,7 @@ app.post('/api/admin/courses/:id/enroll', authenticate, isAdmin, async (req, res
 app.get('/api/admin/users', authenticate, isAdmin, async (req, res) => {
     try {
         const { role, sortBy } = req.query;
-        
+
         const where = {};
         if (role && role !== 'all') {
             where.role = role.toUpperCase();
@@ -1245,7 +1245,7 @@ app.get('/api/admin/users', authenticate, isAdmin, async (req, res) => {
 app.patch('/api/admin/users/:id/toggle-active', authenticate, isAdmin, async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        
+
         // Don't allow blocking yourself
         if (id === req.user.id) {
             return res.status(400).json({ error: 'Ви не можете заблокувати себе' });
