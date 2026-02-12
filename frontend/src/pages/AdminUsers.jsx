@@ -128,10 +128,7 @@ function AdminUsers() {
             <div className="container">
                 <div className="page-header">
                     <div className="header-text">
-                        <div className="header-icon-container">
-                            <span className="header-icon">👥</span>
-                        </div>
-                        <h1>Управління користувачами</h1>
+                        <h1>👥 Управління користувачами</h1>
                         <p>Перегляд, блокування та видалення користувачів платформи</p>
                     </div>
                 </div>
