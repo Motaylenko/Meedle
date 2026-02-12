@@ -249,6 +249,7 @@ app.get('/api/courses', authenticate, async (req, res) => {
         const userId = req.user.id;
         const courses = await prisma.course.findMany({
             include: {
+                teacher: true,
                 enrollments: {
                     where: { userId },
                     select: {
@@ -293,6 +294,7 @@ app.get('/api/courses/:id', authenticate, async (req, res) => {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             include: {
+                teacher: true,
                 enrollments: {
                     where: { userId },
                     select: {
@@ -337,6 +339,7 @@ app.get('/api/courses/:id/details', async (req, res) => {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             include: {
+                teacher: true,
                 tasks: {
                     orderBy: { deadline: 'asc' },
                 },
@@ -351,9 +354,14 @@ app.get('/api/courses/:id/details', async (req, res) => {
             return res.status(404).json({ error: 'Course not found' });
         }
 
-        // Mock detailed data (you can extend this based on your needs)
+        // Deriving teacher's name
+        const derivedTeacherName = course.teacherName || (course.teacher ? course.teacher.fullName : 'Не призначено');
+
+        // Mock detailed data
         const courseDetails = {
             ...course,
+            teacher: derivedTeacherName,
+            teacherFull: course.teacher,
             description: course.description || `Курс присвячений вивченню ${course.name.toLowerCase()}. Включає теоретичні лекції, практичні заняття та проєктну роботу.`,
             materials: [
                 {

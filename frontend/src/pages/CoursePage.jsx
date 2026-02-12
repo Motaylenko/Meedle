@@ -18,6 +18,7 @@ function CoursePage() {
         try {
             setLoading(true)
             const data = await api.getCourseDetails(courseId)
+            console.log('Course data received:', data)
             setCourse(data)
         } catch (err) {
             console.error('Failed to load course:', err)
@@ -162,7 +163,7 @@ function CoursePage() {
                                 <span className="teacher-role">Викладач</span>
                                 <div className="teacher-details">
                                     <span className="teacher-icon-label">👨‍🏫</span>
-                                    <span className="teacher-name">{course.teacher}</span>
+                                    <span className="teacher-name">{course.teacher || course.teacherName || 'Не призначено'}</span>
                                 </div>
                             </div>
                             <p className="description">{course.description}</p>
