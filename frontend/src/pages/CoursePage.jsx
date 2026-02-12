@@ -158,18 +158,14 @@ function CoursePage() {
                         </div>
                         <div className="course-info">
                             <h1>{course.name}</h1>
-                            <p className="teacher">👨‍🏫 {course.teacher}</p>
+                            <div className="teacher-info">
+                                <span className="teacher-role">Викладач</span>
+                                <div className="teacher-details">
+                                    <span className="teacher-icon-label">👨‍🏫</span>
+                                    <span className="teacher-name">{course.teacher}</span>
+                                </div>
+                            </div>
                             <p className="description">{course.description}</p>
-                        </div>
-                    </div>
-                    <div className="course-stats">
-                        <div className="stat">
-                            <span className="stat-value">{course.students}</span>
-                            <span className="stat-label">Студентів</span>
-                        </div>
-                        <div className="stat">
-                            <span className="stat-value">{course.progress}%</span>
-                            <span className="stat-label">Прогрес</span>
                         </div>
                     </div>
                 </div>
