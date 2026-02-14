@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import AddMaterialModal from '../components/AddMaterialModal'
 import AddAssignmentModal from '../components/AddAssignmentModal'
+import AssignmentDetailsModal from '../components/AssignmentDetailsModal'
 import './CoursePage.css'
 
 function CoursePage() {
@@ -17,6 +18,8 @@ function CoursePage() {
     const [assignmentsLoading, setAssignmentsLoading] = useState(false)
     const [isAddMaterialModalOpen, setIsAddMaterialModalOpen] = useState(false)
     const [isAddAssignmentModalOpen, setIsAddAssignmentModalOpen] = useState(false)
+    const [isAssignmentDetailsModalOpen, setIsAssignmentDetailsModalOpen] = useState(false)
+    const [selectedAssignmentId, setSelectedAssignmentId] = useState(null)
     const [userRole, setUserRole] = useState(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         return user.role || null
@@ -118,6 +121,11 @@ function CoursePage() {
             console.error('Failed to delete material:', err)
             alert('Помилка при видаленні матеріалу')
         }
+    }
+
+    const handleOpenAssignment = (id) => {
+        setSelectedAssignmentId(id)
+        setIsAssignmentDetailsModalOpen(true)
     }
 
     const loadCourseData = async () => {
@@ -458,7 +466,10 @@ function CoursePage() {
                                                         💎 Балів: {assignment.points}
                                                     </span>
                                                 </div>
-                                                <button className="assignment-button">
+                                                <button
+                                                    className="assignment-button"
+                                                    onClick={() => handleOpenAssignment(assignment.id)}
+                                                >
                                                     {submission ? 'Переглянути' : 'Відкрити'}
                                                 </button>
                                             </div>
@@ -533,6 +544,16 @@ function CoursePage() {
                 onClose={() => setIsAddAssignmentModalOpen(false)}
                 onSubmit={handleAddAssignment}
                 courseId={courseId}
+            />
+
+            <AssignmentDetailsModal
+                isOpen={isAssignmentDetailsModalOpen}
+                onClose={() => {
+                    setIsAssignmentDetailsModalOpen(false)
+                    loadAssignments() // Refresh list on close to update status/grades
+                }}
+                assignmentId={selectedAssignmentId}
+                userRole={userRole}
             />
         </div>
     )

@@ -671,6 +671,146 @@ app.delete('/api/assignments/:id', authenticate, async (req, res) => {
     }
 });
 
+// Get a single assignment with user's submission
+app.get('/api/assignments/:id', authenticate, async (req, res) => {
+    try {
+        const assignmentId = parseInt(req.params.id);
+        const userId = req.user.id;
+
+        const assignment = await prisma.assignment.findUnique({
+            where: { id: assignmentId },
+            include: {
+                submissions: {
+                    where: { userId },
+                    include: {
+                        user: {
+                            select: { fullName: true, avatar: true }
+                        }
+                    }
+                },
+                course: true
+            }
+        });
+
+        if (!assignment) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        res.json(assignment);
+    } catch (error) {
+        console.error('Error fetching assignment:', error);
+        res.status(500).json({ error: 'Failed to fetch assignment' });
+    }
+});
+
+// Submit an assignment
+app.post('/api/assignments/:id/submit', authenticate, async (req, res) => {
+    try {
+        const assignmentId = parseInt(req.params.id);
+        const userId = req.user.id;
+        const { content, fileUrl } = req.body;
+
+        const submission = await prisma.submission.upsert({
+            where: {
+                assignmentId_userId: {
+                    assignmentId,
+                    userId
+                }
+            },
+            update: {
+                content,
+                fileUrl,
+                status: 'submitted',
+                submittedAt: new Date()
+            },
+            create: {
+                assignmentId,
+                userId,
+                content,
+                fileUrl,
+                status: 'submitted'
+            }
+        });
+
+        res.json(submission);
+    } catch (error) {
+        console.error('Error submitting assignment:', error);
+        res.status(500).json({ error: 'Failed to submit assignment' });
+    }
+});
+
+// Get all submissions for an assignment (Teachers/Admins only)
+app.get('/api/assignments/:id/submissions', authenticate, async (req, res) => {
+    try {
+        const assignmentId = parseInt(req.params.id);
+        const userId = req.user.id;
+
+        const assignment = await prisma.assignment.findUnique({
+            where: { id: assignmentId },
+            include: { course: true }
+        });
+
+        if (!assignment) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        if (req.user.role !== 'ADMIN' && assignment.course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const submissions = await prisma.submission.findMany({
+            where: { assignmentId },
+            include: {
+                user: {
+                    select: { id: true, fullName: true, avatar: true, group: true }
+                }
+            },
+            orderBy: { submittedAt: 'desc' }
+        });
+
+        res.json(submissions);
+    } catch (error) {
+        console.error('Error fetching submissions:', error);
+        res.status(500).json({ error: 'Failed to fetch submissions' });
+    }
+});
+
+// Grade a submission (Teachers/Admins only)
+app.post('/api/submissions/:id/grade', authenticate, async (req, res) => {
+    try {
+        const submissionId = parseInt(req.params.id);
+        const userId = req.user.id;
+        const { grade, feedback } = req.body;
+
+        const submission = await prisma.submission.findUnique({
+            where: { id: submissionId },
+            include: { assignment: { include: { course: true } } }
+        });
+
+        if (!submission) {
+            return res.status(404).json({ error: 'Submission not found' });
+        }
+
+        if (req.user.role !== 'ADMIN' && submission.assignment.course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const updatedSubmission = await prisma.submission.update({
+            where: { id: submissionId },
+            data: {
+                grade: parseInt(grade),
+                feedback,
+                status: 'graded'
+            }
+        });
+
+        res.json(updatedSubmission);
+    } catch (error) {
+        console.error('Error grading submission:', error);
+        res.status(500).json({ error: 'Failed to grade submission' });
+    }
+});
+
 // ==================== SCHEDULE ENDPOINTS ====================
 
 // Get full schedule (optionally filtered by group)

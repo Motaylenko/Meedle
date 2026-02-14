@@ -291,6 +291,28 @@ class ApiService {
             method: 'DELETE'
         });
     }
+
+    async getAssignment(id) {
+        return this.request(`/assignments/${id}`);
+    }
+
+    async submitAssignment(assignmentId, submissionData) {
+        return this.request(`/assignments/${assignmentId}/submit`, {
+            method: 'POST',
+            body: JSON.stringify(submissionData)
+        });
+    }
+
+    async getAssignmentSubmissions(assignmentId) {
+        return this.request(`/assignments/${assignmentId}/submissions`);
+    }
+
+    async gradeSubmission(submissionId, gradeData) {
+        return this.request(`/submissions/${submissionId}/grade`, {
+            method: 'POST',
+            body: JSON.stringify(gradeData)
+        });
+    }
 }
 
 export default new ApiService();
