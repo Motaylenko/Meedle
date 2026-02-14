@@ -121,6 +121,24 @@
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
 }
 
+.btn-secondary {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 12px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+    background: var(--color-bg-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 .assignment-details-modal {
     max-width: 800px !important;
     width: 90%;
@@ -234,6 +252,123 @@
 .submit-btn {
     width: 100%;
     margin-top: var(--spacing-lg);
+}
+
+.submission-preview-card {
+    background: var(--color-bg-tertiary);
+    border: 1px dashed var(--color-border);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.preview-content {
+    color: var(--color-text-secondary);
+}
+
+.preview-text {
+    white-space: pre-wrap;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.sub-link-preview {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    word-break: break-all;
+}
+
+.empty-submission {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+}
+
+.empty-submission p {
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Inner Modal for submission form */
+.inner-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    border-radius: 12px;
+    animation: fadeIn 0.2s ease;
+}
+
+.inner-modal {
+    background: var(--color-bg-primary);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-2xl);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+.inner-modal-header {
+    padding: var(--spacing-lg);
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inner-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.close-btn-mini {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+}
+
+.inner-modal-body {
+    padding: var(--spacing-xl);
+}
+
+.inner-modal-footer {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 /* Submissions View */
@@ -382,4 +517,68 @@
 
 [data-theme="dark"] .status-badge-mini.submitted {
     background: hsla(45, 93%, 25%, 0.4);
+}
+
+/* Success Modal States */
+.success-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    border-radius: 12px;
+    animation: fadeIn 0.3s ease;
+}
+
+[data-theme="dark"] .success-overlay {
+    background: rgba(15, 23, 42, 0.98);
+}
+
+.success-modal {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    max-width: 320px;
+}
+
+.success-icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-lg);
+    display: inline-block;
+    animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.success-modal h3 {
+    font-size: 1.5rem;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-sm);
+}
+
+.success-modal p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }

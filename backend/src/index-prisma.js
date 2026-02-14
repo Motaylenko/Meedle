@@ -677,11 +677,15 @@ app.get('/api/assignments/:id', authenticate, async (req, res) => {
         const assignmentId = parseInt(req.params.id);
         const userId = req.user.id;
 
+        if (isNaN(assignmentId)) {
+            return res.status(400).json({ error: 'Invalid assignment ID' });
+        }
+
         const assignment = await prisma.assignment.findUnique({
             where: { id: assignmentId },
             include: {
                 submissions: {
-                    where: { userId },
+                    where: { userId: userId },
                     include: {
                         user: {
                             select: { fullName: true, avatar: true }
@@ -710,27 +714,39 @@ app.post('/api/assignments/:id/submit', authenticate, async (req, res) => {
         const userId = req.user.id;
         const { content, fileUrl } = req.body;
 
-        const submission = await prisma.submission.upsert({
+        if (isNaN(assignmentId)) {
+            return res.status(400).json({ error: 'Invalid assignment ID' });
+        }
+
+        const existingSubmission = await prisma.submission.findFirst({
             where: {
-                assignmentId_userId: {
-                    assignmentId,
-                    userId
-                }
-            },
-            update: {
-                content,
-                fileUrl,
-                status: 'submitted',
-                submittedAt: new Date()
-            },
-            create: {
                 assignmentId,
-                userId,
-                content,
-                fileUrl,
-                status: 'submitted'
+                userId
             }
         });
+
+        let submission;
+        if (existingSubmission) {
+            submission = await prisma.submission.update({
+                where: { id: existingSubmission.id },
+                data: {
+                    content,
+                    fileUrl,
+                    status: 'submitted',
+                    submittedAt: new Date()
+                }
+            });
+        } else {
+            submission = await prisma.submission.create({
+                data: {
+                    assignmentId,
+                    userId,
+                    content,
+                    fileUrl,
+                    status: 'submitted'
+                }
+            });
+        }
 
         res.json(submission);
     } catch (error) {

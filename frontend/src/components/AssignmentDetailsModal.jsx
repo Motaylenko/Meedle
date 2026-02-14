@@ -10,9 +10,15 @@ function AssignmentDetailsModal({ isOpen, onClose, assignmentId, userRole }) {
     const [submitting, setSubmitting] = useState(false)
     const [activeView, setActiveView] = useState('detail') // 'detail' or 'submissions'
     const [gradingData, setGradingData] = useState({ submissionId: null, grade: '', feedback: '' })
+    const [showSuccess, setShowSuccess] = useState(false)
+    const [isNewSubmission, setIsNewSubmission] = useState(false)
+    const [isFormOpen, setIsFormOpen] = useState(false)
 
     useEffect(() => {
         if (isOpen && assignmentId) {
+            console.log('Opening assignment modal for ID:', assignmentId)
+            setShowSuccess(false) // Ensure success message is hidden on open
+            setIsFormOpen(false)  // Ensure form is closed on open
             loadAssignmentData()
         }
     }, [isOpen, assignmentId])
@@ -32,23 +38,26 @@ function AssignmentDetailsModal({ isOpen, onClose, assignmentId, userRole }) {
     }, [isOpen])
 
     const loadAssignmentData = async () => {
+        if (!assignmentId) return
         try {
             setLoading(true)
             const data = await api.getAssignment(assignmentId)
+            if (!data) throw new Error('No data received')
             setAssignment(data)
 
             // If user has submission, fill the form
             if (data.submissions && data.submissions.length > 0) {
+                const sub = data.submissions[0]
                 setSubmissionData({
-                    content: data.submissions[0].content || '',
-                    fileUrl: data.submissions[0].fileUrl || ''
+                    content: sub.content || '',
+                    fileUrl: sub.fileUrl || ''
                 })
             }
 
             // If teacher/admin, load all submissions
             if (userRole === 'ADMIN' || userRole === 'TEACHER') {
                 const subs = await api.getAssignmentSubmissions(assignmentId)
-                setSubmissions(subs)
+                setSubmissions(subs || [])
             }
         } catch (err) {
             console.error('Failed to load assignment:', err)
@@ -60,10 +69,14 @@ function AssignmentDetailsModal({ isOpen, onClose, assignmentId, userRole }) {
     const handleSubmitWork = async (e) => {
         e.preventDefault()
         try {
+            if (!assignmentId) throw new Error('Missing assignment ID')
+            const isFirstTime = !mySubmission
+            setIsNewSubmission(isFirstTime)
             setSubmitting(true)
             await api.submitAssignment(assignmentId, submissionData)
-            alert('Завдання успішно надіслано!')
-            loadAssignmentData()
+            setShowSuccess(true)
+            setIsFormOpen(false) // Close the form modal
+            await loadAssignmentData()
         } catch (err) {
             console.error('Failed to submit:', err)
             alert('Помилка при надсиланні')
@@ -170,33 +183,30 @@ function AssignmentDetailsModal({ isOpen, onClose, assignmentId, userRole }) {
 
                                     <div className="submission-section">
                                         <h3>Ваша відповідь</h3>
-                                        <form onSubmit={handleSubmitWork}>
-                                            <div className="form-group">
-                                                <label>Текст відповіді / Посилання на роботу</label>
-                                                <textarea
-                                                    value={submissionData.content}
-                                                    onChange={(e) => setSubmissionData({ ...submissionData, content: e.target.value })}
-                                                    placeholder="Введіть текст або посилання на Google Drive/GitHub..."
-                                                    rows="5"
-                                                />
+                                        {mySubmission ? (
+                                            <div className="submission-preview-card">
+                                                <div className="preview-content">
+                                                    {mySubmission.content && (
+                                                        <p className="preview-text">{mySubmission.content}</p>
+                                                    )}
+                                                    {mySubmission.fileUrl && (
+                                                        <a href={mySubmission.fileUrl} target="_blank" rel="noreferrer" className="sub-link-preview">
+                                                            📎 {mySubmission.fileUrl}
+                                                        </a>
+                                                    )}
+                                                </div>
+                                                <button className="btn-primary submit-btn" onClick={() => setIsFormOpen(true)}>
+                                                    Оновити відповідь
+                                                </button>
                                             </div>
-                                            <div className="form-group">
-                                                <label>Додаткове посилання (якщо потрібно)</label>
-                                                <input
-                                                    type="url"
-                                                    value={submissionData.fileUrl}
-                                                    onChange={(e) => setSubmissionData({ ...submissionData, fileUrl: e.target.value })}
-                                                    placeholder="https://..."
-                                                />
+                                        ) : (
+                                            <div className="empty-submission">
+                                                <p>Ви ще не надіслали роботу</p>
+                                                <button className="btn-primary submit-init-btn" onClick={() => setIsFormOpen(true)}>
+                                                    Здати завдання
+                                                </button>
                                             </div>
-                                            <button
-                                                type="submit"
-                                                className="btn-primary submit-btn"
-                                                disabled={submitting}
-                                            >
-                                                {submitting ? 'Надсилання...' : (mySubmission ? 'Оновити відповідь' : 'Здати завдання')}
-                                            </button>
-                                        </form>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
@@ -231,7 +241,7 @@ function AssignmentDetailsModal({ isOpen, onClose, assignmentId, userRole }) {
                                                                 <input
                                                                     type="number"
                                                                     placeholder="Бал"
-                                                                    max={assignment.points}
+                                                                    max={assignment?.points}
                                                                     value={gradingData.grade}
                                                                     onChange={(e) => setGradingData({ ...gradingData, grade: e.target.value })}
                                                                     required
@@ -264,6 +274,71 @@ function AssignmentDetailsModal({ isOpen, onClose, assignmentId, userRole }) {
                         </>
                     )}
                 </div>
+
+                {isFormOpen && (
+                    <div className="inner-modal-overlay">
+                        <div className="inner-modal">
+                            <div className="inner-modal-header">
+                                <h3>{mySubmission ? 'Оновлення відповіді' : 'Здача завдання'}</h3>
+                                <button className="close-btn-mini" onClick={() => setIsFormOpen(false)}>×</button>
+                            </div>
+                            <div className="inner-modal-body">
+                                <form onSubmit={handleSubmitWork}>
+                                    <div className="form-group">
+                                        <label>Текст відповіді / Посилання на роботу</label>
+                                        <textarea
+                                            value={submissionData.content}
+                                            onChange={(e) => setSubmissionData({ ...submissionData, content: e.target.value })}
+                                            placeholder="Введіть текст або посилання на Google Drive/GitHub..."
+                                            rows="8"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Додаткове посилання (якщо потрібно)</label>
+                                        <input
+                                            type="url"
+                                            value={submissionData.fileUrl}
+                                            onChange={(e) => setSubmissionData({ ...submissionData, fileUrl: e.target.value })}
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+                                    <div className="inner-modal-footer">
+                                        <button type="button" className="btn-secondary" onClick={() => setIsFormOpen(false)}>Скасувати</button>
+                                        <button type="submit" className="btn-primary" disabled={submitting}>
+                                            {submitting ? 'Збереження...' : (mySubmission ? 'Зберегти зміни' : 'Здати роботу')}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {showSuccess && (
+                    <div className="success-overlay">
+                        <div className="success-modal">
+                            <div className="success-icon">{isNewSubmission ? '🎉' : '✅'}</div>
+                            <h3>{isNewSubmission ? 'Завдання здано!' : 'Відповідь оновлено!'}</h3>
+                            <p>
+                                {isNewSubmission
+                                    ? 'Вашу роботу успішно надіслано на перевірку.'
+                                    : 'Зміни в архівах вашої відповіді успішно збережено.'}
+                            </p>
+                            <div className="success-btns">
+                                {isNewSubmission ? (
+                                    <button className="btn-primary" onClick={onClose}>
+                                        Зрозуміло
+                                    </button>
+                                ) : (
+                                    <button className="btn-primary" onClick={() => setShowSuccess(false)}>
+                                        Добре
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
