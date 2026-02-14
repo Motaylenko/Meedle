@@ -266,6 +266,31 @@ class ApiService {
             method: 'DELETE'
         });
     }
+
+    // Assignments Management
+    async getCourseAssignments(courseId) {
+        return this.request(`/courses/${courseId}/assignments`);
+    }
+
+    async createAssignment(courseId, assignmentData) {
+        return this.request(`/courses/${courseId}/assignments`, {
+            method: 'POST',
+            body: JSON.stringify(assignmentData)
+        });
+    }
+
+    async updateAssignment(assignmentId, assignmentData) {
+        return this.request(`/assignments/${assignmentId}`, {
+            method: 'PUT',
+            body: JSON.stringify(assignmentData)
+        });
+    }
+
+    async deleteAssignment(assignmentId) {
+        return this.request(`/assignments/${assignmentId}`, {
+            method: 'DELETE'
+        });
+    }
 }
 
 export default new ApiService();

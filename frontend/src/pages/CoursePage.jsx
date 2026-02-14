@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import AddMaterialModal from '../components/AddMaterialModal'
+import AddAssignmentModal from '../components/AddAssignmentModal'
 import './CoursePage.css'
 
 function CoursePage() {
@@ -9,11 +10,17 @@ function CoursePage() {
     const navigate = useNavigate()
     const [course, setCourse] = useState(null)
     const [materials, setMaterials] = useState([])
+    const [assignments, setAssignments] = useState([])
     const [activeTab, setActiveTab] = useState('materials')
     const [loading, setLoading] = useState(true)
     const [materialsLoading, setMaterialsLoading] = useState(false)
+    const [assignmentsLoading, setAssignmentsLoading] = useState(false)
     const [isAddMaterialModalOpen, setIsAddMaterialModalOpen] = useState(false)
-    const [userRole, setUserRole] = useState(null)
+    const [isAddAssignmentModalOpen, setIsAddAssignmentModalOpen] = useState(false)
+    const [userRole, setUserRole] = useState(() => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}')
+        return user.role || null
+    })
 
     useEffect(() => {
         loadCourseData()
@@ -24,13 +31,18 @@ function CoursePage() {
         if (activeTab === 'materials' && course) {
             loadMaterials()
         }
+        if (activeTab === 'assignments' && course) {
+            loadAssignments()
+        }
     }, [activeTab, course])
 
     const loadUserRole = async () => {
         try {
             const user = await api.getUser()
             console.log('User loaded:', user)
-            setUserRole(user.role)
+            if (user && user.role) {
+                setUserRole(user.role)
+            }
         } catch (err) {
             console.error('Failed to load user:', err)
         }
@@ -46,6 +58,42 @@ function CoursePage() {
             setMaterials([])
         } finally {
             setMaterialsLoading(false)
+        }
+    }
+
+    const loadAssignments = async () => {
+        try {
+            setAssignmentsLoading(true)
+            const data = await api.getCourseAssignments(courseId)
+            setAssignments(data)
+        } catch (err) {
+            console.error('Failed to load assignments:', err)
+            setAssignments([])
+        } finally {
+            setAssignmentsLoading(false)
+        }
+    }
+
+    const handleAddAssignment = async (assignmentData) => {
+        try {
+            await api.createAssignment(courseId, assignmentData)
+            setIsAddAssignmentModalOpen(false)
+            await loadAssignments()
+        } catch (err) {
+            console.error('Failed to create assignment:', err)
+            alert('Помилка при створенні завдання')
+        }
+    }
+
+    const handleDeleteAssignment = async (assignmentId) => {
+        if (!confirm('Ви впевнені, що хочете видалити це завдання?')) return
+
+        try {
+            await api.deleteAssignment(assignmentId)
+            await loadAssignments()
+        } catch (err) {
+            console.error('Failed to delete assignment:', err)
+            alert('Помилка при видаленні завдання')
         }
     }
 
@@ -263,12 +311,14 @@ function CoursePage() {
                         <div className="materials-section">
                             <div className="materials-header">
                                 <h2>Навчальні матеріали</h2>
-                                <button
-                                    className="add-material-btn"
-                                    onClick={() => setIsAddMaterialModalOpen(true)}
-                                >
-                                    <span>+</span> Додати матеріал
-                                </button>
+                                {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                    <button
+                                        className="add-material-btn"
+                                        onClick={() => setIsAddMaterialModalOpen(true)}
+                                    >
+                                        <span>+</span> Додати матеріал
+                                    </button>
+                                )}
                             </div>
 
                             {materialsLoading ? (
@@ -347,36 +397,75 @@ function CoursePage() {
 
                     {activeTab === 'assignments' && (
                         <div className="assignments-section">
-                            <h2>Завдання</h2>
-                            <div className="assignments-list">
-                                {course.assignments.map(assignment => {
-                                    const badge = getStatusBadge(assignment.status)
-                                    return (
-                                        <div key={assignment.id} className="assignment-card">
-                                            <div className="assignment-header">
-                                                <h3>{assignment.title}</h3>
-                                                <span className={`status-badge ${badge.class}`}>
-                                                    {badge.text}
-                                                </span>
-                                            </div>
-                                            <p>{assignment.description}</p>
-                                            <div className="assignment-footer">
-                                                <span className="deadline">
-                                                    ⏰ Дедлайн: {assignment.deadline}
-                                                </span>
-                                                {assignment.grade !== null && (
-                                                    <span className="grade">
-                                                        ✅ Оцінка: {assignment.grade}/100
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <button className="assignment-button">
-                                                {assignment.status === 'submitted' ? 'Переглянути' : 'Відкрити'}
-                                            </button>
-                                        </div>
-                                    )
-                                })}
+                            <div className="materials-header">
+                                <h2>Завдання</h2>
+                                {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                    <button
+                                        className="add-material-btn"
+                                        onClick={() => setIsAddAssignmentModalOpen(true)}
+                                    >
+                                        <span>+</span> Додати завдання
+                                    </button>
+                                )}
                             </div>
+
+                            {assignmentsLoading ? (
+                                <div className="loading-state">
+                                    <div className="spinner"></div>
+                                    <p>Завантаження завдань...</p>
+                                </div>
+                            ) : assignments.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>📝 Завдань поки немає</p>
+                                    {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                        <p className="empty-hint">Натисніть "Додати завдання" щоб створити перше</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="assignments-list">
+                                    {assignments.map(assignment => {
+                                        const submission = assignment.submissions?.[0]
+                                        const status = submission
+                                            ? (submission.status === 'graded' ? 'submitted' : 'submitted') // For now
+                                            : 'not_started'
+                                        const badge = getStatusBadge(status)
+
+                                        return (
+                                            <div key={assignment.id} className="assignment-card">
+                                                <div className="assignment-header">
+                                                    <h3>{assignment.title}</h3>
+                                                    <div className="assignment-header-actions">
+                                                        <span className={`status-badge ${badge.class}`}>
+                                                            {submission?.status === 'graded' ? `Оцінено: ${submission.grade}/${assignment.points}` : badge.text}
+                                                        </span>
+                                                        {(userRole === 'ADMIN' || userRole === 'TEACHER') && (
+                                                            <button
+                                                                className="delete-material-btn"
+                                                                onClick={() => handleDeleteAssignment(assignment.id)}
+                                                                title="Видалити завдання"
+                                                            >
+                                                                🗑️
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <p>{assignment.description}</p>
+                                                <div className="assignment-footer">
+                                                    <span className="deadline">
+                                                        ⏰ Дедлайн: {new Date(assignment.deadline).toLocaleString('uk-UA')}
+                                                    </span>
+                                                    <span className="points">
+                                                        💎 Балів: {assignment.points}
+                                                    </span>
+                                                </div>
+                                                <button className="assignment-button">
+                                                    {submission ? 'Переглянути' : 'Відкрити'}
+                                                </button>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -436,6 +525,13 @@ function CoursePage() {
                 isOpen={isAddMaterialModalOpen}
                 onClose={() => setIsAddMaterialModalOpen(false)}
                 onSubmit={handleAddMaterial}
+                courseId={courseId}
+            />
+
+            <AddAssignmentModal
+                isOpen={isAddAssignmentModalOpen}
+                onClose={() => setIsAddAssignmentModalOpen(false)}
+                onSubmit={handleAddAssignment}
                 courseId={courseId}
             />
         </div>

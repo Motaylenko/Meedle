@@ -580,6 +580,97 @@ app.delete('/api/materials/:id', authenticate, async (req, res) => {
     }
 });
 
+// ==================== ASSIGNMENTS ENDPOINTS ====================
+
+// Get all assignments for a course
+app.get('/api/courses/:courseId/assignments', authenticate, async (req, res) => {
+    try {
+        const courseId = parseInt(req.params.courseId);
+        const userId = req.user.id;
+
+        const assignments = await prisma.assignment.findMany({
+            where: { courseId },
+            include: {
+                submissions: {
+                    where: { userId } // Get current user's submission if it exists
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(assignments);
+    } catch (error) {
+        console.error('Error fetching assignments:', error);
+        res.status(500).json({ error: 'Failed to fetch assignments' });
+    }
+});
+
+// Create a new assignment
+app.post('/api/courses/:courseId/assignments', authenticate, async (req, res) => {
+    try {
+        const courseId = parseInt(req.params.courseId);
+        const userId = req.user.id;
+        const { title, description, deadline, points } = req.body;
+
+        const course = await prisma.course.findUnique({
+            where: { id: courseId }
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        if (req.user.role !== 'ADMIN' && course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Only course teacher or admin can add assignments' });
+        }
+
+        const assignment = await prisma.assignment.create({
+            data: {
+                courseId: parseInt(courseId),
+                title,
+                description,
+                deadline: new Date(deadline),
+                points: parseInt(points) || 100
+            }
+        });
+
+        res.json(assignment);
+    } catch (error) {
+        console.error('Error creating assignment:', error);
+        res.status(500).json({ error: 'Failed to create assignment' });
+    }
+});
+
+// Delete an assignment
+app.delete('/api/assignments/:id', authenticate, async (req, res) => {
+    try {
+        const assignmentId = parseInt(req.params.id);
+        const userId = req.user.id;
+
+        const assignment = await prisma.assignment.findUnique({
+            where: { id: assignmentId },
+            include: { course: true }
+        });
+
+        if (!assignment) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        if (req.user.role !== 'ADMIN' && assignment.course.teacherId !== userId) {
+            return res.status(403).json({ error: 'Only course teacher or admin can delete assignments' });
+        }
+
+        await prisma.assignment.delete({
+            where: { id: assignmentId }
+        });
+
+        res.json({ message: 'Assignment deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting assignment:', error);
+        res.status(500).json({ error: 'Failed to delete assignment' });
+    }
+});
+
 // ==================== SCHEDULE ENDPOINTS ====================
 
 // Get full schedule (optionally filtered by group)
@@ -909,6 +1000,7 @@ app.get('/api/user', authenticate, async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             avatar: user.avatar,
+            role: user.role,
             rating: user.rating,
             rank: user.rank,
             coursesCount: user.coursesCount,

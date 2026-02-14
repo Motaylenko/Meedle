@@ -41,6 +41,7 @@ model User {
   enrollments     Enrollment[]
   grades          Grade[]
   tasks           Task[]
+  submissions     Submission[]
   teacherCourses  Course[]      @relation("TeacherCourses")
   createdMaterials Material[]   @relation("CreatedMaterials")
   settings        UserSettings?
@@ -102,6 +103,7 @@ model Course {
   grades      Grade[]
   tasks       Task[]
   courseMaterials Material[]
+  courseAssignments Assignment[]
 
   @@map("courses")
 }
@@ -236,4 +238,43 @@ model Material {
   creator     User?    @relation("CreatedMaterials", fields: [createdBy], references: [id])
 
   @@map("materials")
+}
+
+// Assignment model
+model Assignment {
+  id          Int      @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  deadline    DateTime
+  points      Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@map("assignments")
+}
+
+// Submission model
+model Submission {
+  id           Int      @id @default(autoincrement())
+  assignmentId Int
+  userId       Int
+  content      String?
+  fileUrl      String?
+  grade        Int?
+  feedback     String?
+  status       String   @default("submitted") // submitted, graded
+  submittedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+  @@map("submissions")
 }

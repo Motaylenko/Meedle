@@ -396,6 +396,12 @@
     flex: 1;
 }
 
+.assignment-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .status-badge {
     padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--radius-full);
